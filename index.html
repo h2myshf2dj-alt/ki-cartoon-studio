@@ -1,35 +1,120 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
+<html lang="de"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cartoon Studio">
 <title>KI Cartoon Studio</title>
 <style>
-  body { margin:0; font-family:-apple-system,sans-serif; background:#fff4e0; color:#222;
-         padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
-  h1 { text-align:center; margin:24px 0 8px; font-size:28px; }
-  p.sub { text-align:center; margin:0 0 20px; color:#666; }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  button { border:none; border-radius:22px; padding:26px 10px; font-size:18px;
-           font-weight:700; color:#fff; }
-  .neu { grid-column:1 / 3; background:#ff6b35; font-size:22px; }
-  .b1 { background:#3a86ff; } .b2 { background:#8338ec; }
-  .b3 { background:#06a77d; } .b4 { background:#e63946; }
-  .b5 { background:#555; }
-</style>
-</head>
-<body>
-  <h1>🎬 KI Cartoon Studio</h1>
-  <p class="sub">Dein eigenes Zeichentrickstudio</p>
-  <div class="grid">
-    <button class="neu" onclick="alert('Kommt bald!')">➕ Neuen Film erstellen</button>
-    <button class="b1" onclick="alert('Kommt bald!')">🎞️ Meine Filme</button>
-    <button class="b2" onclick="alert('Kommt bald!')">🐶 Meine Figuren</button>
-    <button class="b3" onclick="alert('Kommt bald!')">📖 Meine Geschichten</button>
-    <button class="b4" onclick="alert('Kommt bald!')">⭐ Vorlagen</button>
-    <button class="b5" onclick="alert('Kommt bald!')">⚙️ Einstellungen</button>
-  </div>
-</body>
-</html>
+body{margin:0;font-family:-apple-system,sans-serif;background:#fff4e0;color:#222;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+h1{text-align:center;margin:24px 0 8px;font-size:28px}
+h2{text-align:center;margin:16px 0}
+h3{margin:18px 0 8px}
+p.sub{text-align:center;margin:0 0 20px;color:#666}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+button{border:none;border-radius:22px;padding:22px 10px;font-size:18px;font-weight:700;color:#fff;background:#555}
+.neu{grid-column:1/3;background:#ff6b35;font-size:22px}
+.b1{background:#3a86ff}.b2{background:#8338ec}.b3{background:#06a77d}.b4{background:#e63946}
+.zurueck{background:#999;padding:12px 18px;font-size:16px;border-radius:14px}
+.gross{width:100%;margin-top:14px;background:#ff6b35}
+.karte{background:#fff;border-radius:20px;padding:10px;margin:12px 0;display:flex;align-items:center;gap:14px}
+.karte svg{width:90px;height:108px}
+.karte b{flex:1;font-size:20px}
+.loesch{background:#e63946;padding:10px 14px;font-size:14px;border-radius:12px}
+.vorschau{background:#fff;border-radius:24px;margin:10px auto;width:200px;padding:10px}
+.vorschau svg{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{background:#fff;border:3px solid #ddd;border-radius:16px;padding:10px 16px;font-size:17px}
+.chip.an{border-color:#ff6b35;background:#ffe3d6;font-weight:700}
+.dot{width:44px;height:44px;border-radius:50%;border:3px solid #ddd;box-sizing:border-box}
+.dot.an{border:5px solid #ff6b35}
+input{width:100%;box-sizing:border-box;font-size:20px;padding:14px;border-radius:14px;border:3px solid #ddd}
+</style></head><body>
+<div id="app"></div>
+<script>
+var TYPEN=['Hund','Hase','Katze','Roboter','Mensch'];
+var FELL=['#c68642','#ffffff','#9e9e9e','#ffb703','#5a3a1e','#ff8fab'];
+var KLEID=['#3a86ff','#e63946','#06a77d','#8338ec','#ffb703','#222222'];
+var EXTRA=['Keins','Hut','Brille','Schleife'];
+var figuren=[];
+try{figuren=JSON.parse(localStorage.getItem('figuren')||'[]')}catch(e){}
+var neu={name:'',typ:'Hund',fell:'#c68642',kleid:'#3a86ff',extra:'Keins'};
+function sichern(){try{localStorage.setItem('figuren',JSON.stringify(figuren))}catch(e){}}
+
+function svg(f){
+  var s='<svg viewBox="0 0 200 240">';
+  var r='stroke="#0004" stroke-width="2"';
+  if(f.typ=='Mensch')s+='<ellipse cx="100" cy="62" rx="62" ry="40" fill="#4a2c17"/>';
+  if(f.typ=='Hund'){
+    s+='<ellipse cx="46" cy="88" rx="16" ry="34" fill="'+f.fell+'" '+r+' transform="rotate(15 46 88)"/>';
+    s+='<ellipse cx="154" cy="88" rx="16" ry="34" fill="'+f.fell+'" '+r+' transform="rotate(-15 154 88)"/>';
+  }
+  if(f.typ=='Hase'){
+    s+='<ellipse cx="75" cy="30" rx="14" ry="42" fill="'+f.fell+'" '+r+'/>';
+    s+='<ellipse cx="125" cy="30" rx="14" ry="42" fill="'+f.fell+'" '+r+'/>';
+  }
+  if(f.typ=='Katze'){
+    s+='<polygon points="48,70 56,14 92,48" fill="'+f.fell+'" '+r+'/>';
+    s+='<polygon points="152,70 144,14 108,48" fill="'+f.fell+'" '+r+'/>';
+  }
+  if(f.typ=='Roboter'){
+    s+='<line x1="100" y1="52" x2="100" y2="22" stroke="#555" stroke-width="5"/><circle cx="100" cy="20" r="9" fill="#e63946"/>';
+  }
+  s+='<rect x="60" y="140" width="80" height="85" rx="30" fill="'+f.kleid+'" '+r+'/>';
+  s+='<circle cx="52" cy="185" r="13" fill="'+f.fell+'" '+r+'/><circle cx="148" cy="185" r="13" fill="'+f.fell+'" '+r+'/>';
+  if(f.typ=='Roboter')s+='<rect x="42" y="50" width="116" height="98" rx="20" fill="#b0bec5" '+r+'/>';
+  else s+='<circle cx="100" cy="100" r="58" fill="'+f.fell+'" '+r+'/>';
+  s+='<circle cx="78" cy="95" r="12" fill="#fff"/><circle cx="122" cy="95" r="12" fill="#fff"/>';
+  s+='<circle cx="80" cy="96" r="6" fill="#111"/><circle cx="120" cy="96" r="6" fill="#111"/>';
+  if(f.typ=='Hund'||f.typ=='Hase'||f.typ=='Katze')s+='<ellipse cx="100" cy="113" rx="9" ry="6" fill="#333"/>';
+  s+='<path d="M80 126 Q100 146 120 126" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  if(f.extra=='Hut')s+='<rect x="68" y="26" width="64" height="26" rx="8" fill="#6d4c41"/><rect x="50" y="48" width="100" height="9" rx="4" fill="#6d4c41"/>';
+  if(f.extra=='Brille')s+='<circle cx="78" cy="95" r="17" fill="none" stroke="#111" stroke-width="4"/><circle cx="122" cy="95" r="17" fill="none" stroke="#111" stroke-width="4"/><line x1="95" y1="95" x2="105" y2="95" stroke="#111" stroke-width="4"/>';
+  if(f.extra=='Schleife')s+='<polygon points="140,50 168,36 168,64" fill="#ff4d8d"/><polygon points="140,50 112,36 112,64" fill="#ff4d8d"/><circle cx="140" cy="50" r="7" fill="#c2185b"/>';
+  return s+'</svg>';
+}
+
+function chips(titel,liste,key,farbe){
+  var h='<h3>'+titel+'</h3><div class="chips">';
+  liste.forEach(function(w){
+    var an=neu[key]===w?' an':'';
+    if(farbe)h+='<span class="dot'+an+'" style="background:'+w+'" onclick="setze(\''+key+'\',\''+w+'\')"></span>';
+    else h+='<span class="chip'+an+'" onclick="setze(\''+key+'\',\''+w+'\')">'+w+'</span>';
+  });
+  return h+'</div>';
+}
+function setze(k,v){neu[k]=v;zeige('bauen')}
+function bald(){alert('Kommt bald!')}
+function neueFigur(){neu={name:'',typ:'Hund',fell:'#c68642',kleid:'#3a86ff',extra:'Keins'};zeige('bauen')}
+function fertig(){
+  if(!neu.name.trim()){alert('Bitte gib der Figur einen Namen.');return}
+  figuren.push({name:neu.name.trim(),typ:neu.typ,fell:neu.fell,kleid:neu.kleid,extra:neu.extra});
+  sichern();zeige('figuren');
+}
+function loeschen(i){
+  if(confirm('Diese Figur wirklich löschen?')){figuren.splice(i,1);sichern();zeige('figuren')}
+}
+
+function zeige(s){
+  var h='';
+  if(s=='home'){
+    h='<h1>🎬 KI Cartoon Studio</h1><p class="sub">Dein eigenes Zeichentrickstudio</p><div class="grid">'+
+    '<button class="neu" onclick="bald()">➕ Neuen Film erstellen</button>'+
+    '<button class="b1" onclick="bald()">🎞️ Meine Filme</button>'+
+    '<button class="b2" onclick="zeige(\'figuren\')">🐶 Meine Figuren</button>'+
+    '<button class="b3" onclick="bald()">📖 Meine Geschichten</button>'+
+    '<button class="b4" onclick="bald()">⭐ Vorlagen</button>'+
+    '<button onclick="bald()">⚙️ Einstellungen</button></div>';
+  }
+  if(s=='figuren'){
+    h='<button class="zurueck" onclick="zeige(\'home\')">← Zurück</button><h2>🐶 Meine Figuren</h2>'+
+    '<button class="gross" onclick="neueFigur()">➕ Neue Figur bauen</button>';
+    if(!figuren.length)h+='<p class="sub" style="margin-top:20px">Noch keine Figuren. Baue deine erste!</p>';
+    figuren.forEach(function(f,i){
+      h+='<div class="karte">'+svg(f)+'<b>'+f.name.replace(/</g,'&lt;')+'</b><button class="loesch" onclick="loeschen('+i+')">Löschen</button></div>';
+    });
+  }
+  if(s=='bauen'){
+    h='<button class="zurueck" onclick="zeige(\'figuren\')">← Zurück</button><h2>Neue Figur</h2>'+
+    '<div class="vorschau">'+svg(neu)+'</div>'+
+    '<h3>Name</h3>
