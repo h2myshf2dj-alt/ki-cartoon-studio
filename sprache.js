@@ -1,6 +1,6 @@
 var Sprache={T:null,warte:Promise.resolve(),rohC:{},cache:{},an:true,fehler:'',VID:'de_DE-thorsten_emotional-medium',
-PRE:{Mann:{st:0,tempo:1,bass:0,mid:0,hoch:0},Frau:{st:4.5,tempo:1,bass:-4,mid:1,hoch:3},Kind:{st:7,tempo:1.05,bass:-6,mid:2,hoch:4},'Erzähler':{st:-1,tempo:0.97,bass:3,mid:0,hoch:-1},Roboter:{st:-2,tempo:1,bass:-3,mid:6,hoch:2}},
-MOD:{froh:[1,1.05,0],traurig:[-1,0.92,0],wuetend:[-0.5,1.06,2],erstaunt:[2,1,0],angst:[1.5,1.1,0],muede:[-1,0.85,0],verliebt:[0.5,0.95,0],nachdenklich:[0,0.93,0]}};
+PRE:{Mann:{st:0,tempo:1,bass:0,mid:0,hoch:0},Frau:{st:3.5,tempo:1,bass:-2,mid:1,hoch:2},Kind:{st:5.5,tempo:1,bass:-3,mid:1,hoch:2},'Erzähler':{st:0,tempo:1,bass:2,mid:0,hoch:0},Roboter:{st:-2,tempo:1,bass:-3,mid:6,hoch:2}},
+MOD:{froh:[0.5,1,0],traurig:[-0.5,1,0],wuetend:[0,1,2],erstaunt:[1,1,0],angst:[1,1,0],muede:[-0.5,1,0],verliebt:[0,1,0],nachdenklich:[0,1,0]}};
 Sprache.laden=function(prog){
   if(Sprache.T)return Promise.resolve();
   var im=window.PiperTest?Promise.resolve(window.PiperTest):import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm');
@@ -22,7 +22,7 @@ Sprache.preset=function(f){
 };
 Sprache.mod=function(p,g){
   var m=Sprache.MOD[g],q=Object.assign({},p);
-  if(m){q.st=(q.st||0)+m[0];q.tempo=(q.tempo||1)*m[1];q.mid=(q.mid||0)+m[2]}
+  if(m){if(q.st)q.st+=m[0];q.tempo=(q.tempo||1)*m[1];q.mid=(q.mid||0)+m[2]}
   return q;
 };
 Sprache.saeubern=function(t){return t.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}️]/gu,'').replace(/\s+/g,' ').trim()};

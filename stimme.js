@@ -6,27 +6,31 @@ resample:function(x,r){
 },
 stretch:function(x,f){
   if(Math.abs(f-1)<0.01)return x;
-  var N=1024,Hs=512,Ha=Hs/f,tol=256,len=x.length;
+  var N=1024,H=256,tol=230,len=x.length,L=N/2;
   if(len<N*3)return x;
-  var n=Math.ceil(len*f)+N*2,out=new Float32Array(n),w=new Float32Array(n),win=new Float32Array(N),i,j;
+  var Ha=H/f,n=Math.ceil(len*f)+N*2,out=new Float32Array(n),w=new Float32Array(n),win=new Float32Array(N),i,j;
   for(i=0;i<N;i++)win[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
   var prev=0,end=0;
   for(var k=0;;k++){
-    var a=Math.round(k*Ha),op=k*Hs;
+    var a=Math.round(k*Ha),op=k*H;
     if(a>len-N||op+N>n)break;
     var s=a;
     if(k>0){
-      var c=Math.min(prev+Hs,len-N),best=-1e30,lo=Math.max(0,a-tol),hi=Math.min(len-N,a+tol);
-      for(var d=lo;d<=hi;d+=2){var sum=0;for(j=0;j<N;j+=4)sum+=x[c+j]*x[d+j];if(sum>best){best=sum;s=d}}
+      var c=Math.min(prev+H,len-N),best=-1e30,lo=Math.max(0,a-tol),hi=Math.min(len-N,a+tol),en=1e-9;
+      for(var d=lo;d<=hi;d++){var sum=0,e2=1e-9;for(j=0;j<L;j++){var y=x[d+j];sum+=x[c+j]*y;e2+=y*y}var sc=sum/Math.sqrt(e2);if(sc>best){best=sc;s=d}}
     }
     for(j=0;j<N;j++){out[op+j]+=win[j]*x[s+j];w[op+j]+=win[j]}
     prev=s;end=op+N;
   }
-  var y=new Float32Array(end);
-  for(i=0;i<end;i++)y[i]=w[i]>0.02?out[i]/w[i]:0;
-  return y;
+  var y2=new Float32Array(end);
+  for(i=0;i<end;i++)y2[i]=w[i]>0.02?out[i]/w[i]:0;
+  return y2;
 },
-pitch:function(x,r){return Math.abs(r-1)<0.01?x:Stimme.stretch(Stimme.resample(x,r),r)},
+pitch:function(x,r,treue){
+  if(Math.abs(r-1)<0.01)return x;
+  var t=treue===undefined?0.5:treue,y=Stimme.resample(x,r);
+  return t>0?Stimme.stretch(y,Math.pow(r,t)):y;
+},
 tempo:function(x,t){return Stimme.stretch(x,1/t)},
 wav:function(x,rate){
   var n=x.length,o=new DataView(new ArrayBuffer(44+n*2));
@@ -50,8 +54,8 @@ eq:function(x,rate,p){
   return new Promise(function(ok,no){var pr=oc.startRendering();if(pr&&pr.then)pr.then(function(r){ok(r.getChannelData(0))},no);else oc.oncomplete=function(e){ok(e.renderedBuffer.getChannelData(0))}});
 },
 verarbeiten:function(x,rate,p){
-  var y=Stimme.pitch(x,Math.pow(2,(p.st||0)/12));
-  if(p.tempo&&p.tempo!=1)y=Stimme.tempo(y,p.tempo);
+  var y=Math.abs(p.st||0)<0.75?x:Stimme.pitch(x,Math.pow(2,(p.st||0)/12),p.treue);
+  if(p.tempo&&Math.abs(p.tempo-1)>0.03)y=Stimme.tempo(y,p.tempo);
   return Stimme.eq(y,rate,p).then(function(z){
     var m=0,i;for(i=0;i<z.length;i++)if(Math.abs(z[i])>m)m=Math.abs(z[i]);
     var g=m>0?0.9/m:1,o=new Float32Array(z.length);for(i=0;i<z.length;i++)o[i]=z[i]*g;
