@@ -6,29 +6,42 @@
 <style>
 body{font-family:-apple-system,sans-serif;background:#fff4e0;padding:16px;margin:0}
 h2{text-align:center}
-button{display:block;width:100%;border:none;border-radius:22px;padding:22px 10px;font-size:18px;font-weight:700;color:#fff;background:#ff6b35;margin:12px 0}
+button{display:block;width:100%;border:none;border-radius:22px;padding:18px 10px;font-size:18px;font-weight:700;color:#fff;background:#ff6b35;margin:10px 0}
 #log{background:#fff;border-radius:14px;padding:12px;font-size:16px;line-height:1.5;white-space:pre-wrap}
 </style></head><body>
-<h2>🎤 Stimmen-Test</h2>
-<button onclick="los('de_DE-thorsten-medium')">Männerstimme testen (Thorsten)</button>
-<button style="background:#8338ec" onclick="los('de_DE-ramona-low')">Frauenstimme testen (Ramona)</button>
-<div id="log">Tippe auf einen Knopf. Beim ersten Mal wird die Stimme einmalig geladen (bis ca. 60 MB, am besten im WLAN).</div>
+<h2>🎤 Stimmen-Test 2</h2>
+<button style="background:#3a86ff" onclick="liste()">1) Stimmenliste anzeigen</button>
+<button onclick="los('de_DE-thorsten-medium')">Thorsten (Mann)</button>
+<button style="background:#8338ec" onclick="los('de_DE-ramona-low')">Ramona (Frau)</button>
+<button style="background:#06a77d" onclick="los('de_DE-kerstin-low')">Kerstin (Frau)</button>
+<button style="background:#e63946" onclick="los('de_DE-eva_k-x_low')">Eva (Frau)</button>
+<div id="log">Wichtig: Lade die Seite vor jedem Stimmen-Test neu (Seite nach unten ziehen), dann zählt jeder Test einzeln.</div>
 <script>
 var T=null,L=document.getElementById('log');
 function p(s){L.textContent=s}
+async function lade(){
+  if(!T)T=await import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm');
+}
+async function liste(){
+  try{
+    p('Liste wird geladen …');await lade();
+    var v=await T.voices();
+    var k=Array.isArray(v)?v.map(function(x){return x.key||x.id||x.name||JSON.stringify(x)}):Object.keys(v);
+    p('Deutsche Stimmen:\n'+k.filter(function(x){return /^de/i.test(x)}).join('\n'));
+  }catch(e){p('❌ Fehler: '+(e&&e.message?e.message:e))}
+}
 async function los(id){
   try{
     var t0=Date.now();
-    p('1/3 Programm wird geladen …');
-    if(!T)T=await import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm');
-    p('2/3 Stimme wird geladen und gesprochen … (kann 1 Minute dauern)');
+    p('Angefragt: '+id+'\n1/3 Programm wird geladen …');
+    await lade();
     var w=await T.predict({text:'Hallo! Ich bin eine Stimme aus deinem Cartoon Studio. Was für ein schöner Tag!',voiceId:id},function(x){
-      if(x&&x.total)p('2/3 Stimme wird geladen: '+Math.round(x.loaded*100/x.total)+' %');
+      if(x&&x.total)p('Angefragt: '+id+'\n2/3 Stimme wird geladen: '+Math.round(x.loaded*100/x.total)+' %');
     });
     var a=new Audio();a.src=URL.createObjectURL(w);
-    p('3/3 Fertig nach '+Math.round((Date.now()-t0)/1000)+' Sekunden. Größe '+Math.round(w.size/1024)+' KB. Ton läuft …');
+    p('Angefragt: '+id+'\n3/3 Fertig nach '+Math.round((Date.now()-t0)/1000)+' Sekunden. Größe '+Math.round(w.size/1024)+' KB. Ton läuft …');
     await a.play();
-  }catch(e){p('❌ Fehler: '+(e&&e.message?e.message:e))}
+  }catch(e){p('Angefragt: '+id+'\n❌ Fehler: '+(e&&e.message?e.message:e))}
 }
 </script>
 </body></html>
