@@ -18,6 +18,7 @@ SCREENS.gedit=function(){
   var h='<button class="zurueck" onclick="zeige(\'geschichten\')">← Zurück</button><h2>✍️ Geschichte</h2>';
   h+='<input value="'+esc(g.titel)+'" oninput="GS[gi].titel=this.value;sichG()">';
   h+='<div id="gd" class="gdauer">'+gDauerHtml(g)+'</div>';
+  h+='<button class="gross" style="background:#8338ec" onclick="filmOeffne()">▶ Film ansehen</button>';
   g.szenen.forEach(function(s,i){
     h+='<div class="szene"><b>Szene '+(i+1)+'</b> <button class="loesch" onclick="gSzDel('+i+')">Szene löschen</button>';
     h+='<label>Erzähler</label><textarea rows="2" oninput="gE('+i+',-1,this.value)">'+esc(s.narr)+'</textarea>';
