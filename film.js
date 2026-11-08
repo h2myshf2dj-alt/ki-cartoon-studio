@@ -32,11 +32,16 @@ function buehneZeichnen(){
   });
   el.innerHTML=s+'</svg>';
 }
+function kText(w){return w=='m'?(Klang.musik?'🎵 Musik: an':'🎵 Musik: aus'):(Klang.fx?'🔊 Geräusche: an':'🔊 Geräusche: aus')}
+function kSpeichern(){try{localStorage.setItem('klang',JSON.stringify({m:Klang.musik,f:Klang.fx}))}catch(e){}}
+try{var kk=JSON.parse(localStorage.getItem('klang')||'{}');if(kk.m===false)Klang.musik=false;if(kk.f===false)Klang.fx=false}catch(e){}
+function kMusik(){Klang.musik=!Klang.musik;kSpeichern();document.getElementById('bm').innerHTML=kText('m');if(!Klang.musik)Klang.stop();else if(fTimer)Klang.start(GS[gi].kat)}
+function kFx(){Klang.fx=!Klang.fx;kSpeichern();document.getElementById('bf').innerHTML=kText('f')}
 function filmOeffne(){FI=gi;zeige('film')}
 SCREENS.film=function(){
   var g=GS[gi];
   setTimeout(buehneZeichnen,0);
-  return '<button class="zurueck" onclick="filmStop();zeige(\'gedit\')">← Zurück</button><h2>🎬 '+esc(g.titel)+'</h2><div id="buehne" class="buehne"></div><div id="untertitel" class="untertitel">Tippe auf „Abspielen“.</div><div id="fstatus" class="fstatus"></div><button class="gross" onclick="filmStart()">▶ Abspielen</button><button class="gross" style="background:#999" onclick="filmStop()">■ Stopp</button><div style="height:40px"></div>';
+  return '<button class="zurueck" onclick="filmStop();zeige(\'gedit\')">← Zurück</button><h2>🎬 '+esc(g.titel)+'</h2><div id="buehne" class="buehne"></div><div id="untertitel" class="untertitel">Tippe auf „Abspielen“.</div><div id="fstatus" class="fstatus"></div><button class="gross" onclick="filmStart()">▶ Abspielen</button><div style="display:flex;gap:10px"><button id="bm" class="klein" style="flex:1" onclick="kMusik()">'+kText('m')+'</button><button id="bf" class="klein" style="flex:1" onclick="kFx()">'+kText('f')+'</button></div><button class="gross" style="background:#999" onclick="filmStop()">■ Stopp</button><div style="height:40px"></div>';
 };
 function ladeStimmen(){try{stimmen=speechSynthesis.getVoices().filter(function(v){return /^de/i.test(v.lang)})}catch(e){}}
 try{ladeStimmen();speechSynthesis.onvoiceschanged=ladeStimmen}catch(e){}
@@ -61,7 +66,7 @@ function sprich(text,f,fertig){
   }catch(e){t=setTimeout(ende,est)}
 }
 function filmStop(){
-  tok++;sprecher='';clearInterval(fTimer);fTimer=null;
+  tok++;sprecher='';clearInterval(fTimer);fTimer=null;Klang.stop();
   try{speechSynthesis.cancel()}catch(e){}
   var u=document.getElementById('untertitel');if(u)u.innerHTML='Gestoppt.';
   buehneZeichnen();
@@ -74,16 +79,18 @@ function filmStart(){
     s.zeilen.forEach(function(z){if(z.text.trim())items.push({t:z.text.trim(),wer:z.wer,s:i})});
   });
   if(!items.length){document.getElementById('untertitel').innerHTML='Die Geschichte hat noch keinen Text.';return}
+  Klang.init();Klang.start(g.kat);
   fTimer=setInterval(function(){tick++;if(sprecher)mund=!mund;else mund=false;buehneZeichnen()},170);
   function schritt(k){
     if(my!=tok)return;
     if(k>=items.length){
       sprecher='';clearInterval(fTimer);fTimer=null;buehneZeichnen();
-      document.getElementById('untertitel').innerHTML='🎬 Ende';document.getElementById('fstatus').innerHTML='';return;
+      Klang.stop();Klang.effekt('ende');document.getElementById('untertitel').innerHTML='🎬 Ende';document.getElementById('fstatus').innerHTML='';return;
     }
     var it=items[k];sprecher=it.wer;
     document.getElementById('fstatus').innerHTML='Szene '+(it.s+1)+' von '+g.szenen.length;
     document.getElementById('untertitel').innerHTML=it.wer?'<b>'+esc(it.wer)+':</b> '+esc(it.t):'<i>'+esc(it.t)+'</i>';
+    Klang.effekt(Klang.passend(it.t));
     sprich(it.t,it.wer?figInfo(it.wer):null,function(){sprecher='';setTimeout(function(){schritt(k+1)},250)});
   }
   schritt(0);

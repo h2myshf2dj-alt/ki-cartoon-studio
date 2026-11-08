@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stimmlabor</title>
+<style>
+body{font-family:-apple-system,sans-serif;background:#fff4e0;padding:16px;margin:0}
+h2{text-align:center}
+button{border:none;border-radius:18px;padding:14px 12px;font-size:17px;font-weight:700;color:#fff;background:#555;margin:4px}
+.gross{display:block;width:100%;background:#ff6b35;font-size:20px;padding:20px;margin:12px 0;border-radius:22px}
+.reg{background:#fff;border-radius:14px;padding:8px 12px;margin:8px 0}
+.reg label{display:flex;justify-content:space-between;font-weight:700}
+.reg input{width:100%}
+select{width:100%;font-size:17px;padding:10px;border-radius:12px;border:3px solid #ddd;background:#fff}
+#log{background:#fff;border-radius:14px;padding:12px;font-size:16px;line-height:1.5;white-space:pre-wrap}
+</style></head><body>
+<h2>🎛 Stimmlabor</h2>
+<select id="vs">
+<option value="de_DE-thorsten_emotional-medium">Thorsten emotional</option>
+<option value="de_DE-thorsten-medium">Thorsten normal</option>
+<option value="de_DE-thorsten-high">Thorsten high</option>
+</select>
+<div>
+<button style="background:#3a86ff" onclick="pre('Mann')">Mann</button>
+<button style="background:#8338ec" onclick="pre('Frau')">Frau</button>
+<button style="background:#06a77d" onclick="pre('Kind')">Kind</button>
+<button style="background:#b5651d" onclick="pre('Opa')">Opa</button>
+<button style="background:#e63946" onclick="pre('Monster')">Monster</button>
+</div>
+<div id="regler"></div>
+<button class="gross" onclick="los()">▶ Anhören</button>
+<div id="log">Wähle eine Stimme, tippe auf Mann / Frau / Kind … und dann auf Anhören. Mit den Reglern kannst du die Stimme verändern. Tippe danach wieder auf Anhören.</div>
+<script src="stimme.js?v=1"></script>
+<script>
+var T=null,RAW={},AUD=new Audio(),L=document.getElementById('log');
+var TXT='Hallo! Ich bin eine Stimme aus deinem Cartoon Studio. Was für ein schöner Tag! Wollen wir zusammen ein Abenteuer erleben?';
+var DEF=[['st','Tonhöhe (Halbtöne)',-10,10,0.5],['tempo','Tempo',0.7,1.3,0.05],['bass','Bass (dB)',-12,12,1],['mid','Mitten (dB)',-12,12,1],['hoch','Höhen (dB)',-12,12,1]];
+var PRE={Mann:[0,1,0,0,0],Frau:[4.5,1,-4,1,3],Kind:[7,1.05,-6,2,4],Opa:[-2,0.9,3,0,-3],Monster:[-6,0.85,6,-2,-4]};
+var V={st:0,tempo:1,bass:0,mid:0,hoch:0};
+function p(s){L.textContent=s}
+function bauen(){
+  var h='';
+  DEF.forEach(function(d){h+='<div class="reg"><label><span>'+d[1]+'</span><span id="w_'+d[0]+'">'+V[d[0]]+'</span></label><input type="range" min="'+d[2]+'" max="'+d[3]+'" step="'+d[4]+'" value="'+V[d[0]]+'" oninput="V.'+d[0]+'=+this.value;document.getElementById(\'w_'+d[0]+'\').textContent=this.value"></div>'});
+  document.getElementById('regler').innerHTML=h;
+}
+function pre(n){var a=PRE[n];DEF.forEach(function(d,i){V[d[0]]=a[i]});bauen();p('Voreinstellung '+n+' gewählt. Tippe auf Anhören.')}
+function wav(x,rate){
+  var n=x.length,o=new DataView(new ArrayBuffer(44+n*2));
+  function t(a,s){for(var i=0;i<s.length;i++)o.setUint8(a+i,s.charCodeAt(i))}
+  t(0,'RIFF');o.setUint32(4,36+n*2,true);t(8,'WAVEfmt ');o.setUint32(16,16,true);o.setUint16(20,1,true);o.setUint16(22,1,true);
+  o.setUint32(24,rate,true);o.setUint32(28,rate*2,true);o.setUint16(32,2,true);o.setUint16(34,16,true);t(36,'data');o.setUint32(40,n*2,true);
+  for(var i=0;i<n;i++){var v=Math.max(-1,Math.min(1,x[i]));o.setInt16(44+i*2,v<0?v*32768:v*32767,true)}
+  return new Blob([o],{type:'audio/wav'});
+}
+function freischalten(){try{AUD.src=URL.createObjectURL(wav(new Float32Array(2205),22050));AUD.play().catch(function(){})}catch(e){}}
+var OFF=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+async function holen(id){
+  if(RAW[id])return RAW[id];
+  if(!T)T=await import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm');
+  var w=await T.predict({text:TXT,voiceId:id},function(x){if(x&&x.total)p('Stimme wird geladen: '+Math.round(x.loaded*100/x.total)+' %')});
+  var ab=await w.arrayBuffer(),tmp=new OFF(1,44100,44100);
+  var b=await new Promise(function(ok,no){tmp.decodeAudioData(ab,ok,no)});
+  return RAW[id]={x:b.getChannelData(0).slice(),rate:b.sampleRate};
+}
+function eq(x,rate){
+  var oc=new OFF(1,x.length+2000,rate),b=oc.createBuffer(1,x.length,rate);b.getChannelData(0).set(x);
+  var s=oc.createBufferSource();s.buffer=b;
+  function f(t,fr,g,q){var n=oc.createBiquadFilter();n.type=t;n.frequency.value=fr;if(g!==undefined)n.gain.value=g;if(q)n.Q.value=q;return n}
+  var hp=f('highpass',70),lo=f('lowshelf',220,V.bass),mi=f('peaking',1800,V.mid,0.9),hi=f('highshelf',4000,V.hoch);
+  s.connect(hp);hp.connect(lo);lo.connect(mi);mi.connect(hi);hi.connect(oc.destination);s.start();
+  return new Promise(function(ok,no){var pr=oc.startRendering();if(pr&&pr.then)pr.then(function(r){ok(r.getChannelData(0))},no);else oc.oncomplete=function(e){ok(e.renderedBuffer.getChannelData(0))}});
+}
+async function los(){
+  freischalten();
+  try{
+    var id=document.getElementById('vs').value;
+    p('Stimme wird geholt … (beim ersten Mal bis 1 Minute)');
+    var r=await holen(id);
+    p('Stimme wird verändert …');
+    await new Promise(function(ok){setTimeout(ok,30)});
+    var x=Stimme.pitch(r.x,Math.pow(2,V.st/12));
+    if(V.tempo!=1)x=Stimme.tempo(x,V.tempo);
+    var y=await eq(x,r.rate),m=0,i;
+    for(i=0;i<y.length;i++)if(Math.abs(y[i])>m)m=Math.abs(y[i]);
+    var z=new Float32Array(y.length),g=m>0?0.9/m:1;for(i=0;i<y.length;i++)z[i]=y[i]*g;
+    AUD.src=URL.createObjectURL(wav(z,r.rate));
+    p('✅ Ton läuft.\nEinstellung: Tonhöhe '+V.st+', Tempo '+V.tempo+', Bass '+V.bass+', Mitten '+V.mid+', Höhen '+V.hoch);
+    await AUD.play();
+  }catch(e){p('❌ Fehler: '+(e&&e.message?e.message:e))}
+}
+bauen();
+</script>
+</body></html>
