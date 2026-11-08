@@ -57,7 +57,7 @@ function zeige(s){
     '<button class="neu" onclick="bald()">➕ Neuen Film erstellen</button>'+
     '<button class="b1" onclick="bald()">🎞️ Meine Filme</button>'+
     '<button class="b2" onclick="zeige(\'figuren\')">🐶 Meine Figuren</button>'+
-    '<button class="b3" onclick="bald()">📖 Meine Geschichten</button>'+
+    '<button class="b3" onclick="zeige(\'geschichten\')">📖 Meine Geschichten</button>'+
     '<button class="b4" onclick="bald()">⭐ Vorlagen</button>'+
     '<button onclick="bald()">⚙️ Einstellungen</button></div>';
   }
@@ -71,6 +71,7 @@ function zeige(s){
     });
   }
   if(s=='bauen')h=bauen();
+  if(typeof SCREENS!='undefined'&&SCREENS[s])h=SCREENS[s]();
   document.getElementById('app').innerHTML=h;
   if(s!=letzte)window.scrollTo(0,0);
   letzte=s;
