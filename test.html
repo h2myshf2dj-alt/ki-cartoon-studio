@@ -1,22 +1,29 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Test</title></head>
-<body style="font-family:sans-serif;padding:20px;font-size:18px">
+<body style="font-family:sans-serif;padding:20px;font-size:17px">
 <div id="out">Test läuft…</div>
 <div id="app"></div>
 <script>
 var out=document.getElementById('out');
 function log(t){out.innerHTML+='<br>'+t}
-function laden(name,weiter){
-  fetch(name+'?t='+Date.now()).then(function(r){
-    log(name+': Status '+r.status);
-    return r.text();
-  }).then(function(code){
-    log(name+': '+code.length+' Zeichen');
-    try{(0,eval)(code);log(name+': OK')}
-    catch(e){log(name+': FEHLER '+e.name+' - '+e.message);return}
-    if(weiter)weiter();
-  }).catch(function(e){log(name+': Ladefehler '+e)});
+var liste=['daten.js','svg.js','svg_tier.js','gen.js','geschichten.js','gedit.js','app.js'];
+function laden(i){
+  if(i>=liste.length){
+    log('<b>Fertig.</b> SCREENS.geschichten: '+(typeof SCREENS!='undefined'&&SCREENS.geschichten?'JA':'NEIN'));
+    return;
+  }
+  var n=liste[i];
+  fetch(n+'?t='+Date.now()).then(function(r){
+    if(r.status!=200){log('❌ '+n+': Status '+r.status);return}
+    return r.text().then(function(c){
+      try{(0,eval)(c);log('✅ '+n+' ('+c.length+' Zeichen)');laden(i+1)}
+      catch(e){log('❌ '+n+': '+e.name+' – '+e.message)}
+    });
+  }).catch(function(e){log('❌ '+n+': '+e)});
 }
-laden('svg.js',function(){laden('app.js')});
+laden(0);
+fetch('index.html?t='+Date.now()).then(function(r){return r.text()}).then(function(c){
+  log('index.html lädt gen.js: '+(c.indexOf('gen.js')>=0?'JA':'<b>NEIN (alte Version!)</b>'));
+});
 </script></body></html>
