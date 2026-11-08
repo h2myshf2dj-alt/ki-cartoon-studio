@@ -6,43 +6,51 @@
 <style>
 body{font-family:-apple-system,sans-serif;background:#fff4e0;padding:16px;margin:0}
 h2{text-align:center}
-button{display:block;width:100%;border:none;border-radius:22px;padding:18px 10px;font-size:18px;font-weight:700;color:#fff;background:#ff6b35;margin:10px 0}
+button{display:block;width:100%;border:none;border-radius:22px;padding:16px 10px;font-size:18px;font-weight:700;color:#fff;background:#ff6b35;margin:9px 0}
 #log{background:#fff;border-radius:14px;padding:12px;font-size:16px;line-height:1.5;white-space:pre-wrap}
 </style></head><body>
-<h2>🎤 Stimmen-Test 3</h2>
-<button onclick="ton(1)">Mann (Thorsten normal)</button>
-<button style="background:#8338ec" onclick="ton(1.22)">Frau (höher)</button>
-<button style="background:#06a77d" onclick="ton(1.45)">Kind (noch höher)</button>
-<button style="background:#e63946" onclick="kerstin()">Kerstin mit anderer Bibliothek</button>
-<div id="log">Tippe auf einen Knopf. Beim ersten Mal wird Thorsten geladen, danach geht es schneller.</div>
+<h2>🎤 Stimmen-Test 4</h2>
+<button onclick="ton(1)">Thorsten normal (Mann)</button>
+<button style="background:#8338ec" onclick="ton(1.2)">Thorsten höher (Frau)</button>
+<button style="background:#06a77d" onclick="ton(1.4)">Thorsten noch höher (Kind)</button>
+<button style="background:#3a86ff" onclick="los('de_DE-thorsten_emotional-medium')">Andere Stimme: Thorsten emotional</button>
+<button style="background:#e63946" onclick="los('de_DE-mls-medium')">Andere Stimme: MLS</button>
+<button style="background:#555" onclick="los('de_DE-thorsten-high')">Andere Stimme: Thorsten high</button>
+<div id="log">Lade die Seite vor jedem Test neu (nach unten ziehen). Die erste Stimme braucht beim ersten Mal etwas Zeit.</div>
 <script>
-var T=null,W=null,L=document.getElementById('log');
+var T=null,W=null,AC=null,L=document.getElementById('log');
+var TXT='Hallo! Ich bin eine Stimme aus deinem Cartoon Studio. Was für ein schöner Tag!';
 function p(s){L.textContent=s}
-function spiele(w,r){
-  var a=new Audio();a.src=URL.createObjectURL(w);
-  a.preservesPitch=false;a.webkitPreservesPitch=false;a.mozPreservesPitch=false;
-  a.playbackRate=r;return a.play();
+async function lade(){if(!T)T=await import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm')}
+async function spiele(w,r){
+  if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state=='suspended')await AC.resume();
+  var buf=await new Promise(function(ok,no){AC.decodeAudioData(await_ab(w),ok,no)});
+  var s=AC.createBufferSource();s.buffer=buf;s.playbackRate.value=r;s.connect(AC.destination);s.start();
 }
+var _ab=null;
+function await_ab(w){return _ab.slice(0)}
 async function ton(r){
   try{
     if(!W){
       p('Thorsten wird geladen und erzeugt … (beim ersten Mal bis 1 Minute)');
-      if(!T)T=await import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm');
-      W=await T.predict({text:'Hallo! Ich bin eine Stimme aus deinem Cartoon Studio. Was für ein schöner Tag!',voiceId:'de_DE-thorsten-medium'});
+      await lade();
+      W=await T.predict({text:TXT,voiceId:'de_DE-thorsten-medium'});
+      _ab=await W.arrayBuffer();
     }
-    p('Ton läuft, Tonlage-Faktor '+r+' …');
+    p('Ton läuft mit Tonlage-Faktor '+r+' (echte Tonhöhe, aber auch schneller) …');
     await spiele(W,r);
   }catch(e){p('❌ Fehler: '+(e&&e.message?e.message:e))}
 }
-async function kerstin(){
+async function los(id){
   try{
-    p('Andere Bibliothek wird geladen …');
-    var R=await import('https://cdn.jsdelivr.net/npm/@realtimex/piper-tts-web@1.1.1/+esm');
-    p('Kerstin wird geladen und erzeugt …');
-    var w=await R.predict({text:'Hallo! Ich bin Kerstin aus deinem Cartoon Studio.',voiceId:'de_DE-kerstin-low'});
-    p('✅ Kerstin klappt! Ton läuft …');
+    p('Angefragt: '+id+'\nWird geladen …');
+    await lade();
+    var w=await T.predict({text:TXT,voiceId:id});
+    _ab=await w.arrayBuffer();
+    p('✅ '+id+' klappt! Ton läuft …');
     await spiele(w,1);
-  }catch(e){p('❌ Kerstin Fehler: '+(e&&e.message?e.message:e))}
+  }catch(e){p('Angefragt: '+id+'\n❌ Fehler: '+(e&&e.message?e.message:e))}
 }
 </script>
 </body></html>
