@@ -59,7 +59,7 @@ function svg(f){
   var s='<svg viewBox="0 0 200 240">'+T+(M?haarHinten(f):R?roboterHinten(f):tierHinten(f))+'</g>';
   s+=koerper(f,bx,by,bw,bh,haut);
   s+=T+kopf(f,haut)+augen(f);
-  s+='<path d="M82 126 Q100 144 118 126" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  s+=f.mund?'<ellipse cx="100" cy="134" rx="11" ry="9" fill="#7a1f2b" stroke="#333" stroke-width="3"/>':'<path d="M82 126 Q100 144 118 126" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>';
   if(M)s+=haarVorn(f);
   return s+extras(f)+'</g></svg>';
 }
