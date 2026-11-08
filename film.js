@@ -88,24 +88,31 @@ async function filmStart(){
     }catch(e){voice=false;Sprache.fehler=String(e&&e.message||e);ut.innerHTML='⚠️ Thorsten ist nicht verfügbar, nehme iPhone-Stimme.';await warten(1500)}
   }
   if(my!=tok)return;
+  if(voice){
+    for(var j=0;j<items.length;j++){
+      ut.innerHTML='🗣 Stimmen werden vorbereitet: '+(j+1)+' von '+items.length;
+      try{await pro[j]}catch(e){}
+      if(my!=tok)return;
+    }
+  }
   Klang.start(g.kat);laeuft=true;B.ein=true;
   for(var k=0;k<items.length;k++){
     var it=items[k],f=it.wer?figInfo(it.wer):null,z=null;
     if(voice){
-      ut.innerHTML='🗣 Stimme '+(k+1)+' von '+items.length+' wird erzeugt …';
       try{z=await pro[k]}catch(e){z=null;Sprache.fehler=String(e&&e.message||e)}
       if(my!=tok)return;
     }
     if(it.s!=B.szene){B.szene=it.s;B.sz0=jetzt();B.props=[]}
     B.item=it;B.spr=it.wer?Math.max(0,g.figuren.indexOf(it.wer)):-1;B.satz0=jetzt();
-    var rq=requisiten(it.t);if(rq.length){B.props=rq.map(function(e){return {e:e,t0:jetzt()}});Klang.effekt('pop')}
+    var rq=requisiten(it.t);
+    if(rq.length&&rq.join('')!=B.props.map(function(p){return p.e}).join('')){B.props=rq.map(function(e){return {e:e,t0:jetzt()}});Klang.effekt('pop')}
     fStatus('Szene '+(it.s+1)+' von '+g.szenen.length);
     ut.innerHTML=it.wer?'<b>'+esc(it.wer)+':</b> '+esc(it.t):'<i>'+esc(it.t)+'</i>';
     Klang.effekt(Klang.passend(it.t));
     if(z)await spielen(z);else await sprichFB(it.t,f,my);
     if(my!=tok)return;
     B.spr=-1;B.env=null;B.lvl=0;
-    await warten(250);
+    await warten(120);
     if(my!=tok)return;
   }
   B.item=null;laeuft=false;Klang.stop();Klang.effekt('ende');ut.innerHTML='🎬 Ende';fStatus('');
