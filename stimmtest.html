@@ -9,7 +9,7 @@ h2{text-align:center}
 button{display:block;width:100%;border:none;border-radius:22px;padding:16px 10px;font-size:18px;font-weight:700;color:#fff;background:#ff6b35;margin:9px 0}
 #log{background:#fff;border-radius:14px;padding:12px;font-size:16px;line-height:1.5;white-space:pre-wrap}
 </style></head><body>
-<h2>🎤 Stimmen-Test 4</h2>
+<h2>🎤 Stimmen-Test 5</h2>
 <button onclick="ton(1)">Thorsten normal (Mann)</button>
 <button style="background:#8338ec" onclick="ton(1.2)">Thorsten höher (Frau)</button>
 <button style="background:#06a77d" onclick="ton(1.4)">Thorsten noch höher (Kind)</button>
@@ -18,28 +18,43 @@ button{display:block;width:100%;border:none;border-radius:22px;padding:16px 10px
 <button style="background:#555" onclick="los('de_DE-thorsten-high')">Andere Stimme: Thorsten high</button>
 <div id="log">Lade die Seite vor jedem Test neu (nach unten ziehen). Die erste Stimme braucht beim ersten Mal etwas Zeit.</div>
 <script>
-var T=null,W=null,AC=null,L=document.getElementById('log');
+var T=null,W=null,L=document.getElementById('log');
 var TXT='Hallo! Ich bin eine Stimme aus deinem Cartoon Studio. Was für ein schöner Tag!';
 function p(s){L.textContent=s}
 async function lade(){if(!T)T=await import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm')}
-async function spiele(w,r){
-  if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();
-  if(AC.state=='suspended')await AC.resume();
-  var buf=await new Promise(function(ok,no){AC.decodeAudioData(await_ab(w),ok,no)});
-  var s=AC.createBufferSource();s.buffer=buf;s.playbackRate.value=r;s.connect(AC.destination);s.start();
+function wav(b){
+  var n=b.length,d=b.getChannelData(0),o=new DataView(new ArrayBuffer(44+n*2));
+  function t(a,s){for(var i=0;i<s.length;i++)o.setUint8(a+i,s.charCodeAt(i))}
+  t(0,'RIFF');o.setUint32(4,36+n*2,true);t(8,'WAVEfmt ');o.setUint32(16,16,true);o.setUint16(20,1,true);o.setUint16(22,1,true);
+  o.setUint32(24,b.sampleRate,true);o.setUint32(28,b.sampleRate*2,true);o.setUint16(32,2,true);o.setUint16(34,16,true);t(36,'data');o.setUint32(40,n*2,true);
+  for(var i=0;i<n;i++){var v=Math.max(-1,Math.min(1,d[i]));o.setInt16(44+i*2,v<0?v*32768:v*32767,true)}
+  return new Blob([o],{type:'audio/wav'});
 }
-var _ab=null;
-function await_ab(w){return _ab.slice(0)}
+async function hoeher(blob,r){
+  if(r==1)return blob;
+  var ab=await blob.arrayBuffer();
+  var Off=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+  var tmp=new Off(1,44100,44100);
+  var buf=await new Promise(function(ok,no){tmp.decodeAudioData(ab,ok,no)});
+  var oc=new Off(1,Math.ceil(buf.length/r),buf.sampleRate);
+  var s=oc.createBufferSource();s.buffer=buf;s.playbackRate.value=r;s.connect(oc.destination);s.start();
+  var out=await new Promise(function(ok,no){var pr=oc.startRendering();if(pr&&pr.then)pr.then(ok,no);else oc.oncomplete=function(e){ok(e.renderedBuffer)}});
+  return wav(out);
+}
+async function abspielen(blob,r,info){
+  var b=await hoeher(blob,r);
+  var a=new Audio();a.src=URL.createObjectURL(b);
+  p(info+'\nDauer-Faktor '+r+', Datei '+Math.round(b.size/1024)+' KB. Ton läuft …');
+  await a.play();
+}
 async function ton(r){
   try{
     if(!W){
       p('Thorsten wird geladen und erzeugt … (beim ersten Mal bis 1 Minute)');
       await lade();
       W=await T.predict({text:TXT,voiceId:'de_DE-thorsten-medium'});
-      _ab=await W.arrayBuffer();
     }
-    p('Ton läuft mit Tonlage-Faktor '+r+' (echte Tonhöhe, aber auch schneller) …');
-    await spiele(W,r);
+    await abspielen(W,r,'Thorsten');
   }catch(e){p('❌ Fehler: '+(e&&e.message?e.message:e))}
 }
 async function los(id){
@@ -47,9 +62,7 @@ async function los(id){
     p('Angefragt: '+id+'\nWird geladen …');
     await lade();
     var w=await T.predict({text:TXT,voiceId:id});
-    _ab=await w.arrayBuffer();
-    p('✅ '+id+' klappt! Ton läuft …');
-    await spiele(w,1);
+    await abspielen(w,1,'✅ '+id+' klappt!');
   }catch(e){p('Angefragt: '+id+'\n❌ Fehler: '+(e&&e.message?e.message:e))}
 }
 </script>
