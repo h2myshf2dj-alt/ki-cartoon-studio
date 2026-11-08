@@ -1,0 +1,22 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test</title></head>
+<body style="font-family:sans-serif;padding:20px;font-size:18px">
+<div id="out">Test läuft…</div>
+<div id="app"></div>
+<script>
+var out=document.getElementById('out');
+function log(t){out.innerHTML+='<br>'+t}
+function laden(name,weiter){
+  fetch(name+'?t='+Date.now()).then(function(r){
+    log(name+': Status '+r.status);
+    return r.text();
+  }).then(function(code){
+    log(name+': '+code.length+' Zeichen');
+    try{(0,eval)(code);log(name+': OK')}
+    catch(e){log(name+': FEHLER '+e.name+' - '+e.message);return}
+    if(weiter)weiter();
+  }).catch(function(e){log(name+': Ladefehler '+e)});
+}
+laden('svg.js',function(){laden('app.js')});
+</script></body></html>
