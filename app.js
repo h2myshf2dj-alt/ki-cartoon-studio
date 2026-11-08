@@ -50,7 +50,7 @@ function bauen(){
   }else h+=chips(R?'Farbe':'Fellfarbe',R?FARBEN.robo:FARBEN.fell,'fell',true);
   h+=chips('Augenfarbe',FARBEN.augen,'augen',true)+chips('Oberteil',OBERTEILE,'oberteil',false)+
   chips('Kleidungsfarbe',FARBEN.kleid,'kleid',true);
-  if(neu.oberteil!='Kleid')h+=chips('Hosenfarbe',FARBEN.hose,'hose',true);
+  if(neu.oberteil!='Kleid')h+=chips(neu.oberteil=='Rock'?'Rockfarbe':'Hosenfarbe',FARBEN.hose,'hose',true);
   h+=chips('Extra',EXTRAS,'extra',false);
   return h+'<button class="gross" onclick="fertig()">✅ Figur speichern</button><div style="height:40px"></div>';
 }

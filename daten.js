@@ -13,5 +13,5 @@ var FARBEN={
 };
 var FRISUREN=['Glatt','Locken','Zöpfe','Dutt','Stachelig'];
 var BAERTE=['Keiner','Schnurrbart','Vollbart'];
-var OBERTEILE=['Shirt','Streifenshirt','Pulli','Jacke','Kleid'];
+var OBERTEILE=['Shirt','Streifenshirt','Pulli','Jacke','Kleid','Rock'];
 var EXTRAS=['Keins','Hut','Mütze','Krone','Brille','Sonnenbrille','Schleife','Halsband','Kopfhörer'];
