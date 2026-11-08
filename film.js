@@ -1,48 +1,31 @@
-var FI=0,tok=0,sprecher='',mund=false,tick=0,fTimer=null,stimmen=[];
-var HGF={Abenteuer:['#a8e6ff','#5fb35a'],Comedy:['#ffe39b','#f4a259'],'Märchen':['#ffd1e8','#8fd18f'],Fantasy:['#4b2e83','#2e7d5b'],Tiere:['#bfeaff','#7cc576'],Familie:['#cfeeff','#8ccf7e'],Kinderfilm:['#c8f0ff','#9ad46f'],Spannung:['#1d1f3a','#2b2b3b'],'Science-Fiction':['#0b1033','#4a4f6a']};
-function hintergrund(k){
-  var c=HGF[k]||HGF.Abenteuer,dunkel=(k=='Spannung'||k=='Fantasy'||k=='Science-Fiction');
-  var s='<rect width="400" height="300" fill="'+c[0]+'"/>';
-  if(dunkel){
-    s+='<circle cx="330" cy="50" r="24" fill="#fff6c9"/>';
-    [[40,30],[90,70],[150,25],[220,60],[270,20],[370,100],[60,120]].forEach(function(p){s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2.5" fill="#fff"/>'});
-  }else s+='<circle cx="340" cy="50" r="28" fill="#ffd93b"/>';
-  s+='<rect y="215" width="400" height="85" fill="'+c[1]+'"/>';
-  if(k=='Abenteuer'||k=='Tiere'||k=='Kinderfilm'||k=='Comedy')
-    [[40,200],[350,205]].forEach(function(p){s+='<rect x="'+(p[0]-5)+'" y="'+p[1]+'" width="10" height="32" fill="#7a4a21"/><circle cx="'+p[0]+'" cy="'+(p[1]-8)+'" r="26" fill="#3f9b4a"/>'});
-  if(k=='Märchen')s+='<rect x="30" y="130" width="80" height="90" fill="#e8d3b0"/><rect x="30" y="112" width="20" height="30" fill="#d9b98a"/><rect x="90" y="112" width="20" height="30" fill="#d9b98a"/><polygon points="26,112 40,86 54,112" fill="#e63946"/><polygon points="86,112 100,86 114,112" fill="#e63946"/>';
-  if(k=='Familie')s+='<rect x="285" y="150" width="90" height="70" fill="#f2c48b"/><polygon points="275,150 330,105 385,150" fill="#c0392b"/><rect x="318" y="180" width="24" height="40" fill="#7a4a21"/>';
-  if(k=='Science-Fiction')s+='<circle cx="70" cy="80" r="34" fill="#c0663a"/><ellipse cx="70" cy="80" rx="52" ry="9" fill="none" stroke="#e8c9a0" stroke-width="4"/>';
-  if(k=='Fantasy')s+='<polygon points="40,215 90,150 140,215" fill="#6b3fa0"/><polygon points="300,215 350,140 400,215" fill="#6b3fa0"/>';
-  return s;
+var FI=0,tok=0,fTimer=null,AUD=new Audio(),stimmen=[],laeuft=false;
+function kText(w){
+  if(w=='m')return Klang.musik?'🎵 Musik: an':'🎵 Musik: aus';
+  if(w=='f')return Klang.fx?'🔊 Geräusche: an':'🔊 Geräusche: aus';
+  return Sprache.an?'🗣 Stimmen: Thorsten':'🗣 Stimmen: iPhone';
 }
-function figInfo(n){
-  var f=null;figuren.forEach(function(x){if(x.name==n)f=x});
-  return norm(f||{name:n});
-}
-function buehneZeichnen(){
-  var el=document.getElementById('buehne');if(!el)return;
-  var g=GS[gi],n=g.figuren.length,sc=n<=2?0.62:(n==3?0.55:0.46),s='<svg viewBox="0 0 400 300">'+hintergrund(g.kat);
-  g.figuren.forEach(function(name,i){
-    var f=figInfo(name),cx=400/n*(i+0.5),sp=(sprecher==name),dy=sp?(mund?-5:0):Math.sin(tick/3+i)*1.5;
-    f.mund=sp&&mund;
-    var inner=svg(f).replace('<svg viewBox="0 0 200 240">','').replace(/<\/svg>\s*$/,'');
-    var k=sc*(sp?1.07:1);
-    s+='<g opacity="'+(sprecher&&!sp?0.8:1)+'" transform="translate('+(cx-100*k)+' '+(300-240*k-12+dy)+') scale('+k+')">'+inner+'</g>';
-  });
-  el.innerHTML=s+'</svg>';
-}
-function kText(w){return w=='m'?(Klang.musik?'🎵 Musik: an':'🎵 Musik: aus'):(Klang.fx?'🔊 Geräusche: an':'🔊 Geräusche: aus')}
-function kSpeichern(){try{localStorage.setItem('klang',JSON.stringify({m:Klang.musik,f:Klang.fx}))}catch(e){}}
-try{var kk=JSON.parse(localStorage.getItem('klang')||'{}');if(kk.m===false)Klang.musik=false;if(kk.f===false)Klang.fx=false}catch(e){}
-function kMusik(){Klang.musik=!Klang.musik;kSpeichern();document.getElementById('bm').innerHTML=kText('m');if(!Klang.musik)Klang.stop();else if(fTimer)Klang.start(GS[gi].kat)}
+function kSpeichern(){try{localStorage.setItem('klang',JSON.stringify({m:Klang.musik,f:Klang.fx,s:Sprache.an}))}catch(e){}}
+try{var kk=JSON.parse(localStorage.getItem('klang')||'{}');if(kk.m===false)Klang.musik=false;if(kk.f===false)Klang.fx=false;if(kk.s===false)Sprache.an=false}catch(e){}
+function kMusik(){Klang.musik=!Klang.musik;kSpeichern();document.getElementById('bm').innerHTML=kText('m');if(!Klang.musik)Klang.stop();else if(laeuft)Klang.start(GS[gi].kat)}
 function kFx(){Klang.fx=!Klang.fx;kSpeichern();document.getElementById('bf').innerHTML=kText('f')}
+function kStimme(){Sprache.an=!Sprache.an;kSpeichern();document.getElementById('bs').innerHTML=kText('s')}
 function filmOeffne(){FI=gi;zeige('film')}
+function filmEnde(){filmStop();clearInterval(fTimer);fTimer=null}
 SCREENS.film=function(){
   var g=GS[gi];
-  setTimeout(buehneZeichnen,0);
-  return '<button class="zurueck" onclick="filmStop();zeige(\'gedit\')">← Zurück</button><h2>🎬 '+esc(g.titel)+'</h2><div id="buehne" class="buehne"></div><div id="untertitel" class="untertitel">Tippe auf „Abspielen“.</div><div id="fstatus" class="fstatus"></div><button class="gross" onclick="filmStart()">▶ Abspielen</button><div style="display:flex;gap:10px"><button id="bm" class="klein" style="flex:1" onclick="kMusik()">'+kText('m')+'</button><button id="bf" class="klein" style="flex:1" onclick="kFx()">'+kText('f')+'</button></div><button class="gross" style="background:#999" onclick="filmStop()">■ Stopp</button><div style="height:40px"></div>';
+  setTimeout(function(){buehneNeu();buehneZeichnen();schleife()},0);
+  return '<button class="zurueck" onclick="filmEnde();zeige(\'gedit\')">← Zurück</button><h2>🎬 '+esc(g.titel)+'</h2><div id="buehne" class="buehne"></div><div id="untertitel" class="untertitel">Tippe auf „Abspielen“.</div><div id="fstatus" class="fstatus"></div><button class="gross" onclick="filmStart()">▶ Abspielen</button><div style="display:flex;gap:10px"><button id="bm" class="klein" style="flex:1" onclick="kMusik()">'+kText('m')+'</button><button id="bf" class="klein" style="flex:1" onclick="kFx()">'+kText('f')+'</button></div><button id="bs" class="klein" style="width:100%" onclick="kStimme()">'+kText('s')+'</button><button class="gross" style="background:#999" onclick="filmStop()">■ Stopp</button><div style="height:40px"></div>';
 };
+function schleife(){
+  clearInterval(fTimer);
+  fTimer=setInterval(function(){
+    if(!document.getElementById('buehne')){clearInterval(fTimer);fTimer=null;return}
+    if(B.fb)B.lvl=B.spr>=0?(Math.floor(jetzt()*9)%4):0;
+    else if(B.env&&!AUD.paused&&B.spr>=0)B.lvl=B.env[Math.floor(AUD.currentTime*24)]||0;
+    else if(!B.fb)B.lvl=0;
+    buehneZeichnen();
+  },62);
+}
 function ladeStimmen(){try{stimmen=speechSynthesis.getVoices().filter(function(v){return /^de/i.test(v.lang)})}catch(e){}}
 try{ladeStimmen();speechSynthesis.onvoiceschanged=ladeStimmen}catch(e){}
 function wahl(f){
@@ -51,47 +34,79 @@ function wahl(f){
   stimmen.forEach(function(x){if(!v&&re.test(x.name))v=x});
   return v||stimmen[0];
 }
-function sprich(text,f,fertig){
-  var done=false,t,w=text.trim().split(/\s+/).length,est=(w/2.4+0.8)*1000;
-  function ende(){if(done)return;done=true;clearTimeout(t);fertig()}
-  if(typeof speechSynthesis=='undefined'||typeof SpeechSynthesisUtterance=='undefined'){t=setTimeout(ende,est);return}
-  try{
-    var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';
-    var v=wahl(f);if(v)u.voice=v;
-    if(f){u.pitch=Math.min(2,(f.geschl=='weiblich'?1.3:0.8)*(f.alter=='Kind'?1.25:1));u.rate=0.95}
-    else{u.pitch=1;u.rate=0.92}
-    u.onend=ende;u.onerror=ende;
-    speechSynthesis.speak(u);
-    t=setTimeout(ende,est+5000);
-  }catch(e){t=setTimeout(ende,est)}
+function sprichFB(text,f,my){
+  return new Promise(function(ok){
+    var done=false,t,w=text.trim().split(/\s+/).length,est=(w/2.4+0.8)*1000;
+    function ende(){if(done)return;done=true;clearTimeout(t);B.fb=false;ok()}
+    B.fb=true;
+    if(typeof speechSynthesis=='undefined'||typeof SpeechSynthesisUtterance=='undefined'){t=setTimeout(ende,est);return}
+    try{
+      var u=new SpeechSynthesisUtterance(Sprache.saeubern(text)||text);u.lang='de-DE';
+      var v=wahl(f);if(v)u.voice=v;
+      if(f){u.pitch=Math.min(2,(f.geschl=='weiblich'?1.3:0.8)*(f.alter=='Kind'?1.25:1));u.rate=0.95}else{u.pitch=1;u.rate=0.92}
+      u.onend=ende;u.onerror=ende;speechSynthesis.speak(u);t=setTimeout(ende,est+5000);
+    }catch(e){t=setTimeout(ende,est)}
+  });
 }
+function spielen(z){
+  return new Promise(function(ok){
+    var t=setTimeout(ok,(z.dauer+3)*1000);
+    function fertig(){clearTimeout(t);ok()}
+    AUD.onended=fertig;AUD.onerror=fertig;AUD.src=z.url;B.env=z.env;
+    var pr=AUD.play();if(pr&&pr.catch)pr.catch(fertig);
+  });
+}
+function freischalten(){try{AUD.pause();AUD.src=URL.createObjectURL(Stimme.wav(new Float32Array(2205),22050));AUD.play().catch(function(){})}catch(e){}}
+function fStatus(s){var e=document.getElementById('fstatus');if(e)e.innerHTML=s}
 function filmStop(){
-  tok++;sprecher='';clearInterval(fTimer);fTimer=null;Klang.stop();
+  tok++;laeuft=false;B.spr=-1;B.lvl=0;B.fb=false;B.env=null;B.item=null;
+  try{AUD.onended=null;AUD.pause()}catch(e){}
   try{speechSynthesis.cancel()}catch(e){}
+  Klang.stop();
   var u=document.getElementById('untertitel');if(u)u.innerHTML='Gestoppt.';
-  buehneZeichnen();
+  fStatus('');
 }
-function filmStart(){
+function warten(ms){return new Promise(function(ok){setTimeout(ok,ms)})}
+async function filmStart(){
   filmStop();
   var my=tok,g=GS[gi],items=[];
   g.szenen.forEach(function(s,i){
-    if(s.narr.trim())items.push({t:s.narr.trim(),wer:'',s:i});
-    s.zeilen.forEach(function(z){if(z.text.trim())items.push({t:z.text.trim(),wer:z.wer,s:i})});
+    if(s.narr.trim())items.push({t:s.narr.trim(),wer:'',s:i,g:'neutral'});
+    s.zeilen.forEach(function(z){if(z.text.trim())items.push({t:z.text.trim(),wer:z.wer,s:i,g:(z.g&&GEFUEHL_L[z.g])?z.g:gefuehl(z.text)})});
   });
-  if(!items.length){document.getElementById('untertitel').innerHTML='Die Geschichte hat noch keinen Text.';return}
-  Klang.init();Klang.start(g.kat);
-  fTimer=setInterval(function(){tick++;if(sprecher)mund=!mund;else mund=false;buehneZeichnen()},170);
-  function schritt(k){
-    if(my!=tok)return;
-    if(k>=items.length){
-      sprecher='';clearInterval(fTimer);fTimer=null;buehneZeichnen();
-      Klang.stop();Klang.effekt('ende');document.getElementById('untertitel').innerHTML='🎬 Ende';document.getElementById('fstatus').innerHTML='';return;
-    }
-    var it=items[k];sprecher=it.wer;
-    document.getElementById('fstatus').innerHTML='Szene '+(it.s+1)+' von '+g.szenen.length;
-    document.getElementById('untertitel').innerHTML=it.wer?'<b>'+esc(it.wer)+':</b> '+esc(it.t):'<i>'+esc(it.t)+'</i>';
-    Klang.effekt(Klang.passend(it.t));
-    sprich(it.t,it.wer?figInfo(it.wer):null,function(){sprecher='';setTimeout(function(){schritt(k+1)},250)});
+  var ut=document.getElementById('untertitel');
+  if(!items.length){ut.innerHTML='Die Geschichte hat noch keinen Text.';return}
+  freischalten();Klang.init();
+  buehneNeu();schleife();
+  var voice=Sprache.an,pro=[];
+  if(voice){
+    try{
+      ut.innerHTML='🗣 Stimme wird geladen …';fStatus('Beim ersten Mal kann das etwas dauern (WLAN empfohlen).');
+      await Sprache.laden(function(p){ut.innerHTML='🗣 Stimme wird geladen: '+p+' %'});
+      if(my!=tok)return;
+      items.forEach(function(it,k){var f=it.wer?figInfo(it.wer):null;pro[k]=Sprache.zeile(it.t,f,it.g);pro[k].catch(function(){})});
+    }catch(e){voice=false;Sprache.fehler=String(e&&e.message||e);ut.innerHTML='⚠️ Thorsten ist nicht verfügbar, nehme iPhone-Stimme.';await warten(1500)}
   }
-  schritt(0);
+  if(my!=tok)return;
+  Klang.start(g.kat);laeuft=true;B.ein=true;
+  for(var k=0;k<items.length;k++){
+    var it=items[k],f=it.wer?figInfo(it.wer):null,z=null;
+    if(voice){
+      ut.innerHTML='🗣 Stimme '+(k+1)+' von '+items.length+' wird erzeugt …';
+      try{z=await pro[k]}catch(e){z=null;Sprache.fehler=String(e&&e.message||e)}
+      if(my!=tok)return;
+    }
+    if(it.s!=B.szene){B.szene=it.s;B.sz0=jetzt();B.props=[]}
+    B.item=it;B.spr=it.wer?Math.max(0,g.figuren.indexOf(it.wer)):-1;B.satz0=jetzt();
+    var rq=requisiten(it.t);if(rq.length){B.props=rq.map(function(e){return {e:e,t0:jetzt()}});Klang.effekt('pop')}
+    fStatus('Szene '+(it.s+1)+' von '+g.szenen.length);
+    ut.innerHTML=it.wer?'<b>'+esc(it.wer)+':</b> '+esc(it.t):'<i>'+esc(it.t)+'</i>';
+    Klang.effekt(Klang.passend(it.t));
+    if(z)await spielen(z);else await sprichFB(it.t,f,my);
+    if(my!=tok)return;
+    B.spr=-1;B.env=null;B.lvl=0;
+    await warten(250);
+    if(my!=tok)return;
+  }
+  B.item=null;laeuft=false;Klang.stop();Klang.effekt('ende');ut.innerHTML='🎬 Ende';fStatus('');
 }

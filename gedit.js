@@ -4,6 +4,7 @@ function gDauerHtml(g){
 }
 function gD(){var e=document.getElementById('gd');if(e)e.innerHTML=gDauerHtml(GS[gi])}
 function gE(i,j,v){var s=GS[gi].szenen[i];if(j<0)s.narr=v;else s.zeilen[j].text=v;sichG();gD()}
+function gG(i,j,v){var z=GS[gi].szenen[i].zeilen[j];if(v)z.g=v;else delete z.g;sichG()}
 function gW(i,j,v){GS[gi].szenen[i].zeilen[j].wer=v;sichG()}
 function gZDel(i,j){GS[gi].szenen[i].zeilen.splice(j,1);sichG();zeige('gedit')}
 function gZAdd(i){var g=GS[gi];g.szenen[i].zeilen.push({wer:g.figuren[0],text:''});sichG();zeige('gedit')}
@@ -24,7 +25,8 @@ SCREENS.gedit=function(){
     h+='<label>Erzähler</label><textarea rows="2" oninput="gE('+i+',-1,this.value)">'+esc(s.narr)+'</textarea>';
     s.zeilen.forEach(function(z,j){
       var o=g.figuren.map(function(n){return '<option'+(n==z.wer?' selected':'')+'>'+esc(n)+'</option>'}).join('');
-      h+='<div class="zeile"><select onchange="gW('+i+','+j+',this.value)">'+o+'</select><button class="loesch" onclick="gZDel('+i+','+j+')">✖</button><textarea rows="2" oninput="gE('+i+','+j+',this.value)">'+esc(z.text)+'</textarea></div>';
+      var og='<option value="">🎭 Gefühl: automatisch</option>'+MIMIK.map(function(m){return '<option value="'+m+'"'+(z.g==m?' selected':'')+'>'+GEFUEHL_L[m]+'</option>'}).join('');
+      h+='<div class="zeile"><select onchange="gW('+i+','+j+',this.value)">'+o+'</select><select onchange="gG('+i+','+j+',this.value)">'+og+'</select><button class="loesch" onclick="gZDel('+i+','+j+')">✖</button><textarea rows="2" oninput="gE('+i+','+j+',this.value)">'+esc(z.text)+'</textarea></div>';
     });
     h+='<button class="klein" onclick="gZAdd('+i+')">➕ Dialogzeile</button></div>';
   });

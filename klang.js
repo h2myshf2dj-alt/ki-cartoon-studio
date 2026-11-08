@@ -25,6 +25,7 @@ var FX={
   vogel:function(c,d,t){for(var i=0;i<4;i++){var o=ton(c,d,t+i*0.16,2600,0.1,'sine',0.45,0.01);o.frequency.exponentialRampToValueAtTime(3800,t+i*0.16+0.08)}return 0.7},
   platsch:function(c,d,t){rausch(c,d,t,0.5,1,'bandpass',2500,500,1.5);return 0.5},
   applaus:function(c,d,t){for(var i=0;i<30;i++)rausch(c,d,t+Math.random()*1.8,0.05,0.3,'highpass',1500);return 2},
+  pop:function(c,d,t){var o=ton(c,d,t,300,0.18,'sine',0.6,0.005);o.frequency.exponentialRampToValueAtTime(900,t+0.08);return 0.2},
   ende:function(c,d,t){[60,64,67,72].forEach(function(m,i){ton(c,d,t+i*0.16,hz(m),0.9,'triangle',0.35,0.01)});[60,64,67].forEach(function(m){ton(c,d,t+0.7,hz(m),1.6,'triangle',0.25,0.02)});return 2.3}
 };
 var REGELN=[[/klopf/i,'klopf'],[/zauber|magi|funkel/i,'zauber'],[/donner|gewitter|blitz/i,'donner'],[/vogel|vögel|zwitscher/i,'vogel'],[/glocke|läutet/i,'glocke'],[/springt|hüpf|sprung/i,'boing'],[/wasser|platsch|\bsee\b|fluss|meer/i,'platsch'],[/schleicht|schritt|läuft|rennt|geht /i,'schritte'],[/jubel|applaus|hurra|feier|gewonnen/i,'applaus']];

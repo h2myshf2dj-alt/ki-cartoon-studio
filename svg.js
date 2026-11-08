@@ -4,21 +4,23 @@ function norm(f){
   if(!d.rasse&&RASSEN[d.art])d.rasse=RASSEN[d.art][0];
   return d;
 }
-var ST='stroke="#0004" stroke-width="2"';
+var ST='stroke="#2b1a12" stroke-opacity=".8" stroke-width="2.6" stroke-linejoin="round"';
 var DEFS='<defs><linearGradient id="sh" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient><radialGradient id="hl" cx=".35" cy=".28" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>';
 
 function koerper(f,bx,by,bw,bh,haut){
   var k=f.kleid,o=f.oberteil,ah=bh*0.6,ay=by+6,w=bx+bw,R=f.art=='Roboter';
   var lang=(o=='Pulli'||o=='Jacke'||o=='Streifenshirt'),ac=lang?k:haut,d=dk(k,0.7),s='',i;
   if(R)ac='#90a4ae';
-  [bx-14,w-2].forEach(function(x){
-    s+='<rect x="'+x+'" y="'+ay+'" width="16" height="'+ah+'" rx="8" fill="'+ac+'" '+ST+'/>';
-    if(lang&&!R)s+='<rect x="'+x+'" y="'+(ay+ah-9)+'" width="16" height="9" rx="4" fill="'+d+'"/>';
-    else if(!R)s+='<rect x="'+(x-1)+'" y="'+(ay-1)+'" width="18" height="19" rx="8" fill="'+k+'" '+ST+'/>';
+  [[bx-14,0],[w-2,1]].forEach(function(p){
+    var x=p[0],g='',ang=p[1]?-(f.armR||0):(f.armL||0);
+    g+='<rect x="'+x+'" y="'+ay+'" width="16" height="'+ah+'" rx="8" fill="'+ac+'" '+ST+'/>';
+    if(lang&&!R)g+='<rect x="'+x+'" y="'+(ay+ah-9)+'" width="16" height="9" rx="4" fill="'+d+'"/>';
+    else if(!R)g+='<rect x="'+(x-1)+'" y="'+(ay-1)+'" width="18" height="19" rx="8" fill="'+k+'" '+ST+'/>';
+    g+='<circle cx="'+(p[1]?w+6:bx-6)+'" cy="'+(ay+ah)+'" r="11" fill="'+haut+'" '+ST+'/>';
+    s+=ang?'<g transform="rotate('+ang+' '+(x+8)+' '+(ay+6)+')">'+g+'</g>':g;
   });
   if(o=='Kleid')s+='<path d="M'+bx+' '+by+' H'+w+' L'+(w+22)+' 225 H'+(bx-22)+' Z" fill="'+k+'" '+ST+'/><path d="M'+bx+' '+by+' H'+w+' L'+(w+22)+' 225 H'+(bx-22)+' Z" fill="url(#sh)"/>';
   else s+='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="26" fill="'+k+'" '+ST+'/><rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="26" fill="url(#sh)"/>';
-  s+='<circle cx="'+(bx-6)+'" cy="'+(ay+ah)+'" r="11" fill="'+haut+'" '+ST+'/><circle cx="'+(w+6)+'" cy="'+(ay+ah)+'" r="11" fill="'+haut+'" '+ST+'/>';
   if(R){
     s+='<rect x="'+(bx+10)+'" y="'+(by+20)+'" width="'+(bw-20)+'" height="'+Math.min(28,bh-30)+'" rx="6" fill="#37474f"/>';
     [0,1,2].forEach(function(j){s+='<circle cx="'+(100-12+j*12)+'" cy="'+(by+20+Math.min(28,bh-30)/2)+'" r="3.5" fill="'+['#e63946','#ffd23f','#06d6a0'][j]+'"/>'});
@@ -86,7 +88,7 @@ function svg(f){
   var s='<svg viewBox="0 0 200 240">'+DEFS+'<ellipse cx="100" cy="236" rx="58" ry="5" fill="#000" opacity=".12"/>'+schwanz(f)+beine(f,haut);
   s+=T+(M?haarHinten(f):R?roboterHinten(f):tierHinten(f))+'</g>';
   s+=koerper(f,bx,by,bw,bh,haut);
-  s+=T+ohren(f,haut)+kopf(f,haut)+wangen(f)+augen(f)+brauen(f)+sommer(f)+bart(f)+mundSvg(f);
+  s+=T+ohren(f,haut)+kopf(f,haut)+wangen(f)+augen(f)+brauen(f)+sommer(f)+bart(f)+mundSvg(f)+deko(f);
   if(M)s+=haarVorn(f);
   return s+extras(f)+'</g></svg>';
 }

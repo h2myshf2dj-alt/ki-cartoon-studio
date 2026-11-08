@@ -48,24 +48,6 @@ function kopf(f,haut){
   else if(!R)s+=tierGesicht(f)+'<circle cx="100" cy="100" r="56" fill="url(#hl)"/>';
   return s;
 }
-function wangen(f){
-  if(f.art=='Roboter')return '';
-  if(f.geschl=='weiblich'||f.alter=='Kind')return '<circle cx="64" cy="114" r="9" fill="#ff5c8a" opacity=".3"/><circle cx="136" cy="114" r="9" fill="#ff5c8a" opacity=".3"/>';
-  return '';
-}
-function augen(f){
-  var a='',R=f.art=='Roboter';
-  [78,122].forEach(function(x){
-    a+='<circle cx="'+x+'" cy="95" r="12" fill="#fff" stroke="#0003" stroke-width="1.5"/><circle cx="'+x+'" cy="96" r="7.5" fill="'+f.augen+'"/><circle cx="'+x+'" cy="96" r="3.8" fill="#111"/><circle cx="'+(x+3)+'" cy="92" r="2.2" fill="#fff"/><circle cx="'+(x-3)+'" cy="100" r="1.2" fill="#fff" opacity=".8"/>';
-  });
-  if(f.geschl=='weiblich'&&!R)a+='<path d="M66 88 L59 84 M70 83 L66 76 M134 88 L141 84 M130 83 L134 76" stroke="#111" stroke-width="3" stroke-linecap="round"/>';
-  return a;
-}
-function brauen(f){
-  if(f.art!='Mensch')return '';
-  var c=dk(f.haar,0.7),w=f.geschl=='männlich'?5.5:3.5;
-  return '<path d="M65 79 Q78 71 91 78" stroke="'+c+'" stroke-width="'+w+'" fill="none" stroke-linecap="round"/><path d="M109 78 Q122 71 135 79" stroke="'+c+'" stroke-width="'+w+'" fill="none" stroke-linecap="round"/>';
-}
 function sommer(f){
   if(f.art!='Mensch'||f.sommer!='Ja')return '';
   var p=[[70,108],[76,113],[84,110],[116,110],[124,113],[130,108],[90,114],[110,114]],s='';
@@ -77,17 +59,6 @@ function bart(f){
   var h=f.haar;
   if(f.bart=='Schnurrbart')return '<path d="M100 118 Q88 112 76 120 Q86 128 100 122 Q114 128 124 120 Q112 112 100 118Z" fill="'+h+'" '+ST+'/>';
   return '<path d="M46 108 Q46 160 100 164 Q154 160 154 108 Q146 138 128 140 Q114 132 100 134 Q86 132 72 140 Q54 138 46 108Z" fill="'+h+'" '+ST+'/><path d="M100 118 Q88 112 76 120 Q86 128 100 122 Q114 128 124 120 Q112 112 100 118Z" fill="'+h+'" '+ST+'/>';
-}
-function mundSvg(f){
-  var R=f.art=='Roboter',D=f.art=='Hund',s='',i;
-  if(R){
-    s='<rect x="76" y="120" width="48" height="20" rx="6" fill="#37474f" '+ST+'/>';
-    for(i=0;i<5;i++){var a=f.mund&&i%2;s+='<rect x="'+(81+i*9)+'" y="'+(a?123:125)+'" width="5" height="'+(a?14:10)+'" rx="2" fill="'+(f.mund?'#ffe066':'#90a4ae')+'"/>'}
-    return s;
-  }
-  if(f.mund)return '<ellipse cx="100" cy="134" rx="11" ry="9" fill="#7a1f2b" stroke="#333" stroke-width="3"/><ellipse cx="100" cy="139" rx="6" ry="3.5" fill="#ff8fab"/>';
-  if(D)s+='<ellipse cx="100" cy="141" rx="6" ry="7" fill="#ff6b8b" '+ST+'/>';
-  return s+'<path d="M82 126 Q100 144 118 126" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>';
 }
 function extras(f){
   var e=f.extra;

@@ -1,0 +1,13 @@
+var REQ=[['kürbis|halloween','🎃'],['schloss|burg','🏰'],['krone','👑'],['schatz|truhe','💰'],['edelstein|diamant|juwel','💎'],['apfel|äpfel','🍎'],['kuchen|torte','🎂'],['eis(\\b|creme)','🍦'],['pizza','🍕'],['ballon','🎈'],['ball(?!on)|fußball','⚽'],['auto\\b|wagen','🚗'],['boot|schiff','⛵'],['rakete','🚀'],['raumschiff|ufo','🛸'],['stern','⭐'],['mond','🌙'],['sonne','☀️'],['regenbogen','🌈'],['regen','🌧️'],['schnee','❄️'],['blume','🌸'],['baum|bäume|wald','🌳'],['haus|hütte','🏠'],['buch|bücher','📖'],['schlüssel','🔑'],['karte','🗺️'],['drache','🐉'],['geist|gespenst','👻'],['zauberstab','🪄'],['hexe','🧙'],['tür\\b','🚪'],['kerze','🕯️'],['knochen','🦴'],['wurst','🌭'],['käse','🧀'],['maus|mäuse','🐭'],['vogel|vögel','🐦'],['fisch','🐟'],['schmetterling','🦋'],['biene','🐝'],['pilz','🍄'],['banane','🍌'],['erdbeere','🍓'],['geschenk|paket','🎁'],['feuer|flamme','🔥'],['blitz|gewitter','⚡'],['wolke','☁️'],['berg','⛰️'],['strand|insel','🏝️'],['planet|erde\\b','🪐'],['roboter','🤖'],['schwert','⚔️'],['schild','🛡️'],['zelt','⛺'],['lupe','🔍'],['telefon|handy','📱'],['gitarre','🎸'],['geige','🎻'],['trommel','🥁'],['musik|lied|singen','🎵'],['brot|brötchen','🍞'],['milch','🥛'],['kaffee','☕'],['schokolade','🍫'],['bonbon|süßigkeit','🍬'],['honig','🍯'],['herz','❤️'],['uhr\\b','⏰'],['bett','🛏️'],['fahrrad','🚲'],['zug\\b','🚂'],['flugzeug','✈️'],['hubschrauber','🚁'],['katze','🐱'],['hund','🐶'],['pferd','🐴'],['hase|kaninchen','🐰'],['bär','🐻'],['löwe','🦁'],['affe','🐵'],['schaf','🐑'],['kuh\\b','🐮'],['schwein','🐷'],['frosch','🐸'],['ente','🦆'],['spinne','🕷️'],['kürbisse','🎃']];
+var REQRE=REQ.map(function(r){return [new RegExp('(^|[^a-zäöüß])('+r[0]+')','i'),r[1]]});
+function requisiten(t){
+  var o=[];
+  REQRE.forEach(function(r){if(o.length<2&&r[0].test(t)&&o.indexOf(r[1])<0)o.push(r[1])});
+  return o;
+}
+var GEF=[['erstaunt',/\?!|!\?|\bwow|plötzlich|überrasch|unglaublich|nanu|huch/i],['angst',/angst|hilfe|schreck|gruselig|unheimlich|zittert|gefahr|oh nein|furcht/i],['wuetend',/wütend|ärger|dumm|verflixt|grr|schimpf|hör auf|niemals|frechheit/i],['traurig',/traurig|weint|schade|leider|vermiss|allein|verloren|tränen/i],['verliebt',/\bliebe|lieb |herz|küss|verlieb|süß/i],['muede',/müde|gähn|schlaf|gute nacht|zzz/i],['froh',/!|toll|super|hurra|juhu|lustig|spaß|lach|freu|gewonn|geschafft|danke|prima|klasse|schön/i],['nachdenklich',/\?|hmm|vielleicht|frage mich/i]];
+function gefuehl(t){
+  for(var i=0;i<GEF.length;i++)if(GEF[i][1].test(t))return GEF[i][0];
+  return 'neutral';
+}
+var GEFUEHL_L={neutral:'😐 Neutral',froh:'😀 Froh',traurig:'😢 Traurig',wuetend:'😠 Wütend',erstaunt:'😮 Erstaunt',angst:'😨 Ängstlich',verliebt:'😍 Verliebt',muede:'😴 Müde',nachdenklich:'🤔 Nachdenklich'};
