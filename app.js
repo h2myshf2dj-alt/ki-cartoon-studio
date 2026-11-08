@@ -21,7 +21,7 @@ function setze(k,v){
     neu.rasse=RASSEN[v]?RASSEN[v][0]:'';
     neu.fell=v=='Roboter'?FARBEN.robo[0]:(RF[neu.rasse]||FARBEN.fell[0]);
   }
-  if(k=='rasse'&&RF[v])neu.fell=RF[v];
+  if(k=='rasse'&&RF[v]){neu.fell=RF[v];if(RAUGEN[v])neu.augen=RAUGEN[v]}
   zeige('bauen');
 }
 function bald(){alert('Kommt bald!')}
@@ -44,10 +44,14 @@ function bauen(){
   if(RASSEN[a])h+=chips('Rasse',RASSEN[a],'rasse',false);
   if(M){
     h+=chips('Hautfarbe',FARBEN.haut,'haut',true)+chips('Haarlänge',['Glatze','Kurz','Mittel','Lang'],'haarlaenge',false);
-    if(neu.haarlaenge!='Glatze')h+=chips('Haarfarbe',FARBEN.haar,'haar',true);
+    if(neu.haarlaenge!='Glatze')h+=chips('Frisur',FRISUREN,'frisur',false)+chips('Haarfarbe',FARBEN.haar,'haar',true);
+    if(neu.geschl=='männlich'&&neu.alter=='Erwachsen')h+=chips('Bart',BAERTE,'bart',false);
+    h+=chips('Sommersprossen',['Nein','Ja'],'sommer',false);
   }else h+=chips(R?'Farbe':'Fellfarbe',R?FARBEN.robo:FARBEN.fell,'fell',true);
-  h+=chips('Augenfarbe',FARBEN.augen,'augen',true)+chips('Oberteil',['Shirt','Pulli','Kleid'],'oberteil',false)+
-  chips('Kleidungsfarbe',FARBEN.kleid,'kleid',true)+chips('Extra',['Keins','Hut','Brille','Schleife'],'extra',false);
+  h+=chips('Augenfarbe',FARBEN.augen,'augen',true)+chips('Oberteil',OBERTEILE,'oberteil',false)+
+  chips('Kleidungsfarbe',FARBEN.kleid,'kleid',true);
+  if(neu.oberteil!='Kleid')h+=chips('Hosenfarbe',FARBEN.hose,'hose',true);
+  h+=chips('Extra',EXTRAS,'extra',false);
   return h+'<button class="gross" onclick="fertig()">✅ Figur speichern</button><div style="height:40px"></div>';
 }
 function zeige(s){
