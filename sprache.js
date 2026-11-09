@@ -1,11 +1,16 @@
-var Sprache={T:null,warte:Promise.resolve(),rohC:{},cache:{},an:true,fehler:'',VID:'de_DE-thorsten_emotional-medium',
+var Sprache={T:null,warte:Promise.resolve(),rohC:{},cache:{},an:true,fehler:'',modus:'hoch',geladen:'',VID:'de_DE-thorsten-high',
+VIDS:{hoch:'de_DE-thorsten-high',normal:'de_DE-thorsten_emotional-medium'},
 PRE:{Mann:{st:0,tempo:1,bass:0,mid:0,hoch:0},Frau:{st:3.5,tempo:1,bass:-2,mid:1,hoch:2},Kind:{st:5.5,tempo:1,bass:-3,mid:1,hoch:2},'Erzähler':{st:0,tempo:1,bass:2,mid:0,hoch:0},Roboter:{st:-2,tempo:1,bass:-3,mid:6,hoch:2}},
 MOD:{froh:[0.5,1,0],traurig:[-0.5,1,0],wuetend:[0,1,2],erstaunt:[1,1,0],angst:[1,1,0],muede:[-0.5,1,0],verliebt:[0,1,0],nachdenklich:[0,1,0]}};
+Sprache.setModus=function(m){
+  Sprache.modus=m;Sprache.an=(m!='iphone');
+  if(Sprache.VIDS[m]&&Sprache.VIDS[m]!=Sprache.VID){Sprache.VID=Sprache.VIDS[m];Sprache.rohC={};Sprache.cache={}}
+};
 Sprache.laden=function(prog){
-  if(Sprache.T)return Promise.resolve();
+  if(Sprache.T&&Sprache.geladen==Sprache.VID)return Promise.resolve();
   var im=window.PiperTest?Promise.resolve(window.PiperTest):import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm');
   return im.then(function(m){
-    Sprache.T=m;
+    Sprache.T=m;Sprache.geladen=Sprache.VID;
     if(m.download)return m.download(Sprache.VID,function(x){if(prog&&x&&x.total)prog(Math.round(x.loaded*100/x.total))});
   });
 };

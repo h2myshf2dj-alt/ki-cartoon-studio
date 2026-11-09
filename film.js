@@ -2,13 +2,13 @@ var FI=0,tok=0,fTimer=null,AUD=new Audio(),stimmen=[],laeuft=false;
 function kText(w){
   if(w=='m')return Klang.musik?'🎵 Musik: an':'🎵 Musik: aus';
   if(w=='f')return Klang.fx?'🔊 Geräusche: an':'🔊 Geräusche: aus';
-  return Sprache.an?'🗣 Stimmen: Thorsten':'🗣 Stimmen: iPhone';
+  return {hoch:'🗣 Stimme: Thorsten hoch (beste)',normal:'🗣 Stimme: Thorsten normal (schneller)',iphone:'🗣 Stimme: iPhone (nicht für MP4)'}[Sprache.modus];
 }
-function kSpeichern(){try{localStorage.setItem('klang',JSON.stringify({m:Klang.musik,f:Klang.fx,s:Sprache.an}))}catch(e){}}
-try{var kk=JSON.parse(localStorage.getItem('klang')||'{}');if(kk.m===false)Klang.musik=false;if(kk.f===false)Klang.fx=false;if(kk.s===false)Sprache.an=false}catch(e){}
+function kSpeichern(){try{localStorage.setItem('klang',JSON.stringify({m:Klang.musik,f:Klang.fx,s:Sprache.an,q:Sprache.modus}))}catch(e){}}
+try{var kk=JSON.parse(localStorage.getItem('klang')||'{}');if(kk.m===false)Klang.musik=false;if(kk.f===false)Klang.fx=false;if(kk.q)Sprache.setModus(kk.q);else if(kk.s===false)Sprache.setModus('iphone')}catch(e){}
 function kMusik(){Klang.musik=!Klang.musik;kSpeichern();document.getElementById('bm').innerHTML=kText('m');if(!Klang.musik)Klang.stop();else if(laeuft)Klang.start(GS[gi].kat)}
 function kFx(){Klang.fx=!Klang.fx;kSpeichern();document.getElementById('bf').innerHTML=kText('f')}
-function kStimme(){Sprache.an=!Sprache.an;kSpeichern();document.getElementById('bs').innerHTML=kText('s')}
+function kStimme(){Sprache.setModus({hoch:'normal',normal:'iphone',iphone:'hoch'}[Sprache.modus]);kSpeichern();document.getElementById('bs').innerHTML=kText('s')}
 function filmOeffne(){FI=gi;zeige('film')}
 function filmEnde(){filmStop();clearInterval(fTimer);fTimer=null}
 SCREENS.film=function(){
@@ -30,9 +30,10 @@ function ladeStimmen(){try{stimmen=speechSynthesis.getVoices().filter(function(v
 try{ladeStimmen();speechSynthesis.onvoiceschanged=ladeStimmen}catch(e){}
 function wahl(f){
   if(!stimmen.length)return null;
-  var re=f&&f.geschl=='männlich'?/markus|martin|yannick|viktor|jonas|stefan/i:/anna|petra|helena|marlene|sandy|shelley|ela/i,v=null;
-  stimmen.forEach(function(x){if(!v&&re.test(x.name))v=x});
-  return v||stimmen[0];
+  var re=f&&f.geschl=='männlich'?/markus|martin|yannick|viktor|jonas|stefan/i:/anna|petra|helena|marlene|sandy|shelley|ela/i,v=null,gut=/premium|enhanced|erweitert|verbessert/i;
+  var gs=stimmen.slice().sort(function(a,b){return (gut.test(b.name+' '+(b.voiceURI||'')))-(gut.test(a.name+' '+(a.voiceURI||'')))});
+  gs.forEach(function(x){if(!v&&re.test(x.name))v=x});
+  return v||gs[0];
 }
 function sprichFB(text,f,my){
   return new Promise(function(ok){
