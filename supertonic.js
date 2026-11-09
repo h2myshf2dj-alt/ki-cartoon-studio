@@ -50,14 +50,9 @@ Super.laden=function(prog,kompat){
   return Super.laden_p;
 };
 /* Neu starten, z. B. im sicheren Modus (nur WASM), wenn die schnelle Version nur Stille liefert */
-Super.neu_p=null;
-Super.neustart=function(kompat,prog){
-  if(Super.neu_p)return Super.neu_p;
-  Super.neu_p=Super.warte.then(function(){
-    Super.ok=false;Super.laden_p=null;Super.S={};
-    return Super.laden(prog,kompat);
-  });
-  return Super.neu_p;
+Super.freigeben=function(){
+  Object.keys(Super.S).forEach(function(k){try{if(Super.S[k]&&Super.S[k].release)Super.S[k].release()}catch(e){}});
+  Super.S={};Super.ok=false;Super.laden_p=null;
 };
 Super.stilLaden=async function(name){
   if(Super.stil[name])return Super.stil[name];

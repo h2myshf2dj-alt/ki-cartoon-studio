@@ -14,7 +14,7 @@ Sprache.superStimme=function(f){
   return u[n]||Sprache.SUPER[n];
 };
 Sprache.laden=function(prog){
-  if(Sprache.modus=='super')return Super.laden(prog,false);
+  if(Sprache.modus=='super')return Sprache.superLaden(prog);
   if(Sprache.T&&Sprache.geladen==Sprache.VID)return Promise.resolve();
   var im=window.PiperTest?Promise.resolve(window.PiperTest):import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm');
   return im.then(function(m){
@@ -38,7 +38,26 @@ Sprache.mod=function(p,g){
   if(m){if(q.st)q.st+=m[0];q.tempo=(q.tempo||1)*m[1];q.mid=(q.mid||0)+m[2]}
   return q;
 };
-Sprache.info='';
+Sprache.info='';Sprache.geprueft=false;
+Sprache.superLaden=async function(prog){
+  var P=function(t){if(prog)prog(t)},k=false;
+  try{k=localStorage.getItem('superKompat')=='1'}catch(e){}
+  await Super.laden(prog,k);
+  if(Sprache.geprueft)return;
+  P('Stimme wird geprüft …');
+  var r=await Super.sprich('Hallo.','M1',{});
+  if(Sprache.spitze(r.x)<0.003&&Super.backend!='wasm'){
+    Sprache.info='sicherer Modus';
+    try{localStorage.setItem('superKompat','1')}catch(e){}
+    P('Sicherer Modus wird gestartet …');
+    Super.freigeben();
+    await Super.laden(prog,true);
+    P('Stimme wird geprüft …');
+    r=await Super.sprich('Hallo.','M1',{});
+  }
+  if(Sprache.spitze(r.x)<0.0005)throw new Error('Die Stimme ist stumm ('+(Super.backend||'?')+')');
+  Sprache.geprueft=true;
+};
 Sprache.spitze=function(x){var m=0;for(var i=0;i<x.length;i++){var v=x[i];if(v!==v){x[i]=0;continue}if(v<0)v=-v;if(v>m)m=v}if(m>1)for(var j=0;j<x.length;j++)x[j]=Math.max(-1,Math.min(1,x[j]));return m};
 Sprache.saeubern=function(t){return t.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}️]/gu,'').replace(/\s+/g,' ').trim()};
 Sprache.roh=function(text){
@@ -54,10 +73,7 @@ Sprache.zeile=function(text,f,g){
   if(Sprache.modus=='super'){
     var vs=Sprache.superStimme(f),tp=Sprache.STEMPO[g]||1.05,k2='S|'+t+'|'+vs+'|'+tp;
     if(Sprache.cache[k2])return Sprache.cache[k2];
-    var p2=Super.sprich(t,vs,{tempo:tp}).then(function(r){
-      var pk=Sprache.spitze(r.x);
-      if(pk<0.003&&!Super.kompat){Sprache.info='Stille erkannt, sicherer Modus';return Super.neustart(true).then(function(){return Super.sprich(t,vs,{tempo:tp})})}
-      return r;
+    var p2=Super.sprich(t,vs,{tempo:tp}).then(function(r){return r
     }).then(function(r){
       var pk=Sprache.spitze(r.x);
       if(pk<0.0005)throw new Error('Die Stimme ist stumm ('+(Super.backend||'?')+')');
