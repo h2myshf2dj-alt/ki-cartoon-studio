@@ -103,7 +103,7 @@ async function filmStart(rec){
   var ut=document.getElementById('untertitel');
   if(!items.length){ut.innerHTML='Die Geschichte hat noch keinen Text.';return}
   freischalten();Klang.init();
-  Sprache.verteilen(g.figuren.map(function(n){return figInfo(n)}));
+  Sprache.verteilen(g.figuren.map(function(n){return figInfo(n)}),g.stimmen);
   ut.style.display='';
   buehneNeu();schleife();
   var voice=Sprache.an,pro=[];
@@ -158,7 +158,7 @@ async function filmStart(rec){
     B.item=it;B.spr=it.wer?Math.max(0,g.figuren.indexOf(it.wer)):-1;B.satz0=jetzt();
     var rq=requisiten(it.t);
     if(rq.length&&rq.join('')!=B.props.map(function(p){return p.e}).join('')){B.props=rq.map(function(e){return {e:e,t0:jetzt()}});Klang.effekt('pop')}
-    var wq=z?(Sprache.modus=='super'?'Supertonic '+Sprache.superStimme(f)+' · '+(Super.backend||'?'):'Thorsten'):'⚠️ iPhone-Ersatzstimme'+(Sprache.fehler?' ('+esc(Sprache.fehler)+')':'');
+    var wq=z?(Sprache.modus=='super'?'Supertonic '+Sprache.superStimme(f)+((Sprache.FXZ[f?f.name:'__erz']||'normal')!='normal'?' · '+Stimme.EFFEKTE[Sprache.FXZ[f?f.name:'__erz']].n:'')+' · '+(Super.backend||'?'):'Thorsten'):'⚠️ iPhone-Ersatzstimme'+(Sprache.fehler?' ('+esc(Sprache.fehler)+')':'');
     fStatus((rec?'🔴 Aufnahme – ':'')+'Szene '+(it.s+1)+' von '+g.szenen.length+'<br><small>🗣 '+wq+'</small>');
     Rec.wer=it.wer||'';Rec.ut=it.t;
     ut.innerHTML=it.wer?'<b>'+esc(it.wer)+':</b> '+esc(it.t):'<i>'+esc(it.t)+'</i>';

@@ -53,6 +53,30 @@ eq:function(x,rate,p){
   s.connect(hp);hp.connect(lo);lo.connect(mi);mi.connect(hi);hi.connect(oc.destination);s.start();
   return new Promise(function(ok,no){var pr=oc.startRendering();if(pr&&pr.then)pr.then(function(r){ok(r.getChannelData(0))},no);else oc.oncomplete=function(e){ok(e.renderedBuffer.getChannelData(0))}});
 },
+EFFEKTE:{
+  normal:{n:'Normal'},
+  piepsig:{n:'🐭 Piepsig (Maus)',st:7,treue:0.85,hoch:2},
+  kobold:{n:'🧚 Kobold (frech)',st:4,treue:0.9,mid:3},
+  helium:{n:'🎈 Helium (schnell)',st:5,treue:0.45},
+  hexe:{n:'🧙 Hexe',st:3,tempo:0.95,mid:6,hoch:3},
+  opa:{n:'👴 Opa (zittrig)',st:-2,tempo:0.9,hoch:-3,zitter:1},
+  tief:{n:'🐻 Tief (Bär)',st:-5,treue:1,bass:4},
+  monster:{n:'👹 Monster',st:-9,treue:1,bass:6,mid:-2},
+  roboter:{n:'🤖 Roboter',st:-1,mid:5,ring:1}
+},
+effekt:function(x,rate,name){
+  var e=Stimme.EFFEKTE[name];
+  if(!e||name=='normal')return Promise.resolve(x);
+  var p={st:e.st||0,treue:e.treue,tempo:e.tempo,bass:e.bass||0,mid:e.mid||0,hoch:e.hoch||0};
+  return Stimme.verarbeiten(x,rate,p).then(function(y){
+    var i;
+    if(e.ring){for(i=0;i<y.length;i++)y[i]=y[i]*(0.45+0.55*Math.sin(2*Math.PI*55*i/rate))}
+    if(e.zitter){for(i=0;i<y.length;i++)y[i]=y[i]*(0.85+0.15*Math.sin(2*Math.PI*5.5*i/rate))}
+    var m=0;for(i=0;i<y.length;i++)if(Math.abs(y[i])>m)m=Math.abs(y[i]);
+    if(m>0){var g=0.9/m;for(i=0;i<y.length;i++)y[i]*=g}
+    return y;
+  });
+},
 verarbeiten:function(x,rate,p){
   var y=Math.abs(p.st||0)<0.75?x:Stimme.pitch(x,Math.pow(2,(p.st||0)/12),p.treue);
   if(p.tempo&&Math.abs(p.tempo-1)>0.03)y=Stimme.tempo(y,p.tempo);

@@ -12,9 +12,12 @@ Sprache.ZUT={};
 Sprache.POOL={Mann:['M1','M4','M5','M3'],Frau:['F1','F2','F4','F5','F3'],Kind:['F3','F5','F4','F2'],Roboter:['M3','M5','M4']};
 Sprache.rolle=function(f){return f.art=='Roboter'?'Roboter':(f.alter=='Kind'?'Kind':(f.geschl=='weiblich'?'Frau':'Mann'))};
 /* Jede Figur eines Films bekommt eine eigene Stimme (Erzähler M2 bleibt frei) */
-Sprache.verteilen=function(liste){
-  var benutzt={M2:1},z={};
-  liste.forEach(function(f){if(f&&f.stimme){z[f.name]=f.stimme;benutzt[f.stimme]=1}});
+Sprache.FXZ={};
+Sprache.verteilen=function(liste,wunsch){
+  wunsch=wunsch||{};
+  var benutzt={},z={},fx={},we=wunsch['Erzähler']||{};
+  z.__erz=we.v||'M2';benutzt[z.__erz]=1;fx.__erz=we.fx||'normal';
+  liste.forEach(function(f){var w=f&&wunsch[f.name];if(f)fx[f.name]=(w&&w.fx)||'normal';if(w&&w.v){z[f.name]=w.v;benutzt[w.v]=1}else if(f&&f.stimme){z[f.name]=f.stimme;benutzt[f.stimme]=1}});
   liste.forEach(function(f){
     if(!f||z[f.name])return;
     var pool=Sprache.POOL[Sprache.rolle(f)]||Sprache.POOL.Mann,v=null;
@@ -22,10 +25,11 @@ Sprache.verteilen=function(liste){
     if(!v)['M1','F1','M4','F2','M5','F4','M3','F5','F3'].forEach(function(x){if(!v&&!benutzt[x])v=x});
     v=v||pool[0];z[f.name]=v;benutzt[v]=1;
   });
-  Sprache.ZUT=z;
+  Sprache.ZUT=z;Sprache.FXZ=fx;
 };
 Sprache.superStimme=function(f){
   if(f&&f.name&&Sprache.ZUT[f.name])return Sprache.ZUT[f.name];
+  if(!f&&Sprache.ZUT.__erz)return Sprache.ZUT.__erz;
   var n=!f?'Erzähler':(f.art=='Roboter'?'Roboter':(f.alter=='Kind'?'Kind':(f.geschl=='weiblich'?'Frau':'Mann'))),u={};
   try{u=JSON.parse(localStorage.getItem('superstimmen')||'{}')}catch(e){}
   return u[n]||Sprache.SUPER[n];
@@ -102,14 +106,15 @@ Sprache.zeile=function(text,f,g){
   var t=Sprache.aussprache(Sprache.saeubern(text));
   if(!t)return Promise.reject(new Error('leer'));
   if(Sprache.modus=='super'){
-    var vs=Sprache.superStimme(f),tp=Sprache.STEMPO[g]||1.05,k2='S|'+t+'|'+vs+'|'+tp;
+    var vs=Sprache.superStimme(f),tp=Sprache.STEMPO[g]||1.05,fxn=Sprache.FXZ[f&&f.name?f.name:'__erz']||'normal',k2='S|'+t+'|'+vs+'|'+tp+'|'+fxn;
     if(Sprache.cache[k2])return Sprache.cache[k2];
     var p2=Super.sprich(t,vs,{tempo:tp}).then(function(r){return r
     }).then(function(r){
       var pk=Sprache.spitze(r.x);
       if(pk<0.0005)throw new Error('Die Stimme ist stumm ('+(Super.backend||'?')+')');
       if(pk<0.7&&pk>0.1){var g=0.85/pk;for(var i=0;i<r.x.length;i++)r.x[i]*=g}
-      return r;
+      if(fxn=='normal')return r;
+      return Stimme.effekt(r.x,r.rate,fxn).then(function(y){return {x:y,rate:r.rate}});
     }).then(function(r){return {url:URL.createObjectURL(Stimme.wav(r.x,r.rate)),env:Stimme.pegel(r.x,r.rate,24),dauer:r.x.length/r.rate,x:r.x,rate:r.rate}});
     p2.catch(function(){delete Sprache.cache[k2]});
     return Sprache.cache[k2]=p2;
