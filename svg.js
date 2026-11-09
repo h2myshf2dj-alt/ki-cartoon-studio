@@ -9,14 +9,26 @@ var DEFS='<defs><linearGradient id="sh" x1="0" x2="1" y1="0" y2="0"><stop offset
 
 function geo(f){
   var K=f.alter=='Kind',M=f.geschl=='männlich',H=f.art=='Mensch';
-  if(H&&K)return {chin:126,hs:0.66,neck:1,top:130,bot:172,tw:28,bw:26,wv:24,armX:33,armL:36,hand:8,legTop:168,legW:11,gap:3,hem:202,sh:10};
-  if(H&&M)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:44,bw:34,wv:33,armX:50,armL:56,hand:10,legTop:156,legW:17,gap:2,hem:206,sh:14};
-  if(H)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:28,bw:29,wv:20,armX:35,armL:52,hand:9,legTop:156,legW:12,gap:3,hem:206,sh:12};
+  if(H&&K)return {chin:126,hs:0.66,neck:1,top:130,bot:172,tw:28,bw:26,wv:24,armW:13,armX:33,armL:36,hand:8,legTop:168,legW:11,gap:3,hem:202,sh:10};
+  if(H&&M)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:44,bw:34,wv:33,armW:17,armX:50,armL:56,hand:10,legTop:156,legW:17,gap:2,hem:206,sh:14};
+  if(H)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:28,bw:29,wv:20,armW:13,armX:35,armL:52,hand:9,legTop:156,legW:12,gap:3,hem:206,sh:12};
   if(K)return {chin:174,hs:1,top:168,bot:202,tw:26,bw:24,wv:24,armX:31,armL:24,hand:9,legTop:198,legW:11,gap:3,hem:214,sh:10};
   if(M)return {chin:148,hs:0.92,top:140,bot:196,tw:46,bw:36,wv:36,armX:52,armL:46,hand:11,legTop:190,legW:16,gap:2,hem:208,sh:14};
   return {chin:148,hs:0.92,top:140,bot:196,tw:33,bw:35,wv:25,armX:39,armL:42,hand:10,legTop:190,legW:13,gap:3,hem:208,sh:12};
 }
+function humPfad(G,kleid){
+  var c=100,t=G.top,b=G.bot-4,w=t+Math.round((G.bot-t)*0.52),a=G.tw,v=G.wv,h=G.bw,n=function(x){return Math.round(x*10)/10};
+  var o='M'+(c-10)+' '+(t-2)+' Q'+(c-a+6)+' '+(t-1)+' '+(c-a+1)+' '+(t+9)+' C'+(c-a-1)+' '+(t+24)+' '+(c-v-2)+' '+(w-18)+' '+(c-v)+' '+w;
+  if(kleid){
+    var hm=G.hem;
+    o+=' C'+(c-v-2)+' '+(w+12)+' '+(c-h-8)+' '+(hm-34)+' '+(c-h-14)+' '+hm+' Q'+c+' '+(hm+5)+' '+(c+h+14)+' '+hm+' C'+(c+h+8)+' '+(hm-34)+' '+(c+v+2)+' '+(w+12)+' '+(c+v)+' '+w;
+  }else{
+    o+=' C'+(c-v+1)+' '+(w+12)+' '+(c-h-1)+' '+(b-14)+' '+(c-h)+' '+(b-4)+' Q'+(c-h)+' '+(b+2)+' '+(c-h+8)+' '+(b+2)+' H'+(c+h-8)+' Q'+(c+h)+' '+(b+2)+' '+(c+h)+' '+(b-4)+' C'+(c+h+1)+' '+(b-14)+' '+(c+v-1)+' '+(w+12)+' '+(c+v)+' '+w;
+  }
+  return o+' C'+(c+v+2)+' '+(w-18)+' '+(c+a+1)+' '+(t+24)+' '+(c+a-1)+' '+(t+9)+' Q'+(c+a-6)+' '+(t-1)+' '+(c+10)+' '+(t-2)+'Z';
+}
 function rumpfPfad(G,kleid){
+  if(G.neck)return humPfad(G,kleid);
   var c=100,t=G.top,b=G.bot,w=(t+b)/2+6;
   if(kleid)return 'M'+(c-G.tw+4)+' '+(t+4)+' Q'+(c-G.tw+4)+' '+t+' '+(c-G.tw+12)+' '+t+' H'+(c+G.tw-12)+' Q'+(c+G.tw-4)+' '+t+' '+(c+G.tw-4)+' '+(t+4)+' L'+(c+G.wv)+' '+w+' L'+(c+G.bw+14)+' '+G.hem+' H'+(c-G.bw-14)+' L'+(c-G.wv)+' '+w+' Z';
   return 'M'+(c-G.tw)+' '+(t+6)+' Q'+(c-G.tw)+' '+t+' '+(c-G.tw+8)+' '+t+' H'+(c+G.tw-8)+' Q'+(c+G.tw)+' '+t+' '+(c+G.tw)+' '+(t+6)+' L'+(c+G.wv)+' '+w+' L'+(c+G.bw)+' '+(b-4)+' Q'+(c+G.bw)+' '+(b+2)+' '+(c+G.bw-5)+' '+(b+2)+' H'+(c-G.bw+5)+' Q'+(c-G.bw)+' '+(b+2)+' '+(c-G.bw)+' '+(b-4)+' L'+(c-G.wv)+' '+w+' Z';
@@ -27,14 +39,22 @@ function koerper(f,G,haut){
   if(R)ac='#90a4ae';
   [-1,1].forEach(function(sg){
     var cx=c+sg*G.armX,x=cx-8,ang=sg<0?(f.armL||0):-(f.armR||0),g='';
-    g+='<circle cx="'+(cx+sg*(G.hand*0.7))+'" cy="'+(hy-G.hand*0.5)+'" r="'+(G.hand*0.42)+'" fill="'+haut+'" '+ST+'/>';
+    if(!G.neck)g+='<circle cx="'+(cx+sg*(G.hand*0.7))+'" cy="'+(hy-G.hand*0.5)+'" r="'+(G.hand*0.42)+'" fill="'+haut+'" '+ST+'/>';
+    if(G.neck){
+      var aw=G.armW,bw2=aw*0.68,L=G.armL,x0=cx-aw/2;
+      g+='<path d="M'+x0+' '+(ay+aw/2)+' Q'+x0+' '+ay+' '+cx+' '+ay+' Q'+(cx+aw/2)+' '+ay+' '+(cx+aw/2)+' '+(ay+aw/2)+' L'+(cx+bw2/2)+' '+(ay+L-3)+' Q'+(cx+bw2/2)+' '+(ay+L)+' '+cx+' '+(ay+L)+' Q'+(cx-bw2/2)+' '+(ay+L)+' '+(cx-bw2/2)+' '+(ay+L-3)+' Z" fill="'+ac+'" '+ST+'/>';
+      if(lang)g+='<rect x="'+(cx-bw2/2-0.5)+'" y="'+(ay+L-8)+'" width="'+(bw2+1)+'" height="8" rx="3.5" fill="'+d+'"/>';
+      else g+='<path d="M'+(x0-1)+' '+(ay+aw/2+1)+' Q'+(x0-1)+' '+(ay-1)+' '+cx+' '+(ay-1)+' Q'+(cx+aw/2+1)+' '+(ay-1)+' '+(cx+aw/2+1)+' '+(ay+aw/2+1)+' L'+(cx+aw/2+0.5)+' '+(ay+17)+' H'+(cx-aw/2-0.5)+' Z" fill="'+k+'" '+ST+'/>';
+    }else{
     g+='<rect x="'+x+'" y="'+ay+'" width="16" height="'+G.armL+'" rx="8" fill="'+ac+'" '+ST+'/>';
     if(lang&&!R)g+='<rect x="'+x+'" y="'+(ay+G.armL-9)+'" width="16" height="9" rx="4" fill="'+d+'"/>';
     else if(!R)g+='<rect x="'+(x-1)+'" y="'+(ay-1)+'" width="18" height="19" rx="8" fill="'+k+'" '+ST+'/>';
+    }
     g+=G.neck?'<ellipse cx="'+cx+'" cy="'+(hy+2)+'" rx="'+(G.hand*0.85)+'" ry="'+(G.hand*1.15)+'" fill="'+haut+'" '+ST+'/>':'<circle cx="'+cx+'" cy="'+hy+'" r="'+G.hand+'" fill="'+haut+'" '+ST+'/>';
     s+=ang?'<g transform="rotate('+ang+' '+cx+' '+(t+10)+')">'+g+'</g>':g;
   });
   if(G.neck)s+='<rect x="93" y="'+(t-14)+'" width="14" height="24" rx="5" fill="'+haut+'" '+ST+'/><path d="M93 '+(t-4)+' Q100 '+(t+6)+' 107 '+(t-4)+'" fill="#000" opacity=".12"/>';
+  if(G.neck&&!kl&&o!='Rock')s+='<rect x="'+(c-G.bw+1)+'" y="'+(b-12)+'" width="'+(2*G.bw-2)+'" height="22" rx="9" fill="'+f.hose+'" '+ST+'/>';
   s+='<path d="'+rumpfPfad(G,kl)+'" fill="'+k+'" '+ST+'/><path d="'+rumpfPfad(G,kl)+'" fill="url(#sh)"/>';
   if(R){
     var ph=Math.min(28,b-t-26);
@@ -43,7 +63,7 @@ function koerper(f,G,haut){
     return s;
   }
   var wy=b-13;
-  if(!kl){
+  if(!kl&&!(G.neck&&o!='Rock')){
     if(o=='Rock'){
       s+='<path d="M'+(c-G.bw)+' '+wy+' H'+(c+G.bw)+' L'+(c+G.bw+14)+' '+G.hem+' H'+(c-G.bw-14)+' Z" fill="'+f.hose+'" '+ST+'/><path d="M'+(c-G.bw)+' '+wy+' H'+(c+G.bw)+' L'+(c+G.bw+14)+' '+G.hem+' H'+(c-G.bw-14)+' Z" fill="url(#sh)"/>';
       [-0.6,0,0.6].forEach(function(q){s+='<path d="M'+(c+q*G.bw)+' '+(wy+4)+' L'+(c+q*(G.bw+14))+' '+(G.hem-2)+'" stroke="'+dk(f.hose,0.7)+'" stroke-width="2" opacity=".5"/>'});
@@ -55,7 +75,7 @@ function koerper(f,G,haut){
   }
   var y=b-13;
   if(o=='Shirt'){
-    s+='<path d="M'+(c-G.bw+6)+' '+(y-7)+' H'+(c+G.bw-6)+'" stroke="'+d+'" stroke-width="2" stroke-dasharray="4 3"/>';
+    if(!G.neck)s+='<path d="M'+(c-G.bw+6)+' '+(y-7)+' H'+(c+G.bw-6)+'" stroke="'+d+'" stroke-width="2" stroke-dasharray="4 3"/>';
     if(f.geschl=='männlich'&&f.alter!='Kind')s+='<rect x="'+(c+G.tw-30)+'" y="'+(t+22)+'" width="16" height="14" rx="3" fill="none" stroke="'+d+'" stroke-width="2"/>';
     else s+='<polygon points="'+c+','+(t+18)+' '+(c+4)+','+(t+27)+' '+(c+13)+','+(t+27)+' '+(c+6)+','+(t+33)+' '+(c+9)+','+(t+42)+' '+c+','+(t+36)+' '+(c-9)+','+(t+42)+' '+(c-6)+','+(t+33)+' '+(c-13)+','+(t+27)+' '+(c-4)+','+(t+27)+'" fill="#ffffffaa"/>';
   }
