@@ -30,7 +30,7 @@ async function gProbe(i){
   var g=GS[gi],n=i?g.figuren[i-1]:'Erzähler',st=document.getElementById('gprobe');
   function S(t){if(st)st.innerHTML=t}
   try{if(gProbeQ){gProbeQ.stop()}}catch(e){}
-  Klang.init();
+  freischalten();Klang.init();
   if(Sprache.modus!='super'){Sprache.setModus('super');kSpeichern()}
   var t0=Date.now(),uhr=setInterval(function(){S('⏳ Stimme wird erzeugt … '+Math.round((Date.now()-t0)/1000)+' s (beim ersten Mal länger)')},1000);
   try{
@@ -41,7 +41,7 @@ async function gProbe(i){
     var z=await Sprache.zeile(text,f,'froh');
     clearInterval(uhr);
     var c=Klang.ctx,b=c.createBuffer(1,z.x.length,z.rate);b.getChannelData(0).set(z.x);
-    var q=c.createBufferSource();q.buffer=b;q.connect(Klang.out);if(c.state!='running'&&c.resume)c.resume();q.start();gProbeQ=q;
+    var q=c.createBufferSource();q.buffer=b;q.connect(Klang.out);if(c.state!='running'&&c.resume)c.resume();q.start();gProbeQ=q;try{if(AUD.paused){AUD.loop=true;AUD.play().catch(function(){});setTimeout(function(){AUD.pause();AUD.loop=false},z.x.length/z.rate*1000+500)}}catch(e){}
     S('🔊 '+esc(n)+': '+STIMMNAMEN[Sprache.superStimme(f)]+' · '+Stimme.EFFEKTE[Sprache.FXZ[f?f.name:'__erz']||'normal'].n);
   }catch(e){clearInterval(uhr);S('⚠️ '+esc(String(e&&e.message||e)))}
 }
