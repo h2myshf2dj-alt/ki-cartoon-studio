@@ -79,6 +79,17 @@ Sprache.superLaden=async function(prog){
   Sprache.geprueft=true;
 };
 Sprache.spitze=function(x){var m=0;for(var i=0;i<x.length;i++){var v=x[i];if(v!==v){x[i]=0;continue}if(v<0)v=-v;if(v>m)m=v}if(m>1)for(var j=0;j<x.length;j++)x[j]=Math.max(-1,Math.min(1,x[j]));return m};
+Sprache.AUSSPRACHE={'wow':'Wau','koffein':'Koffe-in','koffeins':'Koffe-ins','museum':'Muse-um','museen':'Muse-en','theater':'Te-ater','kakao':'Kaka-o','pizza':'Pitsa','pizzen':'Pitsen','cool':'kuhl','coole':'kuhle','cooler':'kuhler','coolen':'kuhlen','okay':'okeh','ok':'okeh','handy':'Händi','handys':'Händis','baby':'Bebi','babys':'Bebis','hey':'hei','hi':'hai','yeah':'jäh','sorry':'sorri','party':'Parti','partys':'Partis','team':'Tiem','computer':'Kompjuter','laptop':'Läptop','email':'Imeil','e-mail':'Imeil','video':'Wideo','videos':'Wideos','app':'Äpp','apps':'Äpps','croissant':'Kroassong','restaurant':'Restorang','garage':'Garasche','orange':'Oronsche','chance':'Schangse','jeans':'Dschiens','job':'Dschopp','jogging':'Dschogging','chef':'Scheff','genie':'Schenie','ingenieur':'Inschenjöhr','toilette':'Toalette','zoo':'Tso','hobby':'Hobbi','smartphone':'Smahtfohn','cartoon':'Kartuhn','popcorn':'Popkorn','burger':'Börger','ketchup':'Ketschapp','familie':'Famili-e','familien':'Famili-en','linie':'Lini-e','ferien':'Feri-en','ozean':'Oze-an','ballon':'Ballong','koala':'Ko-ala','leopard':'Le-opard','chamäleon':'Kamäle-on','pinguin':'Pinggu-in','pinguine':'Pinggu-ine','ups':'upps','yippie':'jippi','bye':'bai','ciao':'tschau','tablet':'Täblet','wlan':'Wee-lan','tv':'Tee-fau','show':'Schoh','fan':'Fänn','fans':'Fänns','star':'Stahr','stars':'Stahrs','clown':'Klaun','clowns':'Klauns','comic':'Kommick','comics':'Kommicks','detektiv':'Detek-tief','roboter':'Robotter','region':'Regi-on','nation':'Natsi-on','station':'Statsi-on','lektion':'Lektsi-on','polizei':'Politsei','mission':'Missi-on','aktion':'Aktsi-on','situation':'Situatsi-on'};
+Sprache.STAMM=[['koffein','koffe-in'],['museum','muse-um'],['theater','te-ater'],['kakao','kaka-o'],['pizza','pitsa'],['pinguin','pinggu-in'],['familie','famili-e'],['ozean','oze-an'],['handy','händi'],['computer','kompjuter'],['restaurant','restorang'],['polizei','politsei'],['garage','garasche'],['clown','klaun'],['zoo','tso'],['party','parti'],['baby','bebi']];
+/* Schwierige Wörter vor dem Sprechen gegen Lautschrift tauschen (nur für die Stimme, Text bleibt) */
+Sprache.aussprache=function(t){
+  return t.replace(/[\p{L}][\p{L}-]*/gu,function(w){
+    var lw=w.toLowerCase(),r=Sprache.AUSSPRACHE[lw];
+    if(!r)Sprache.STAMM.forEach(function(st){if(!r&&lw.indexOf(st[0])==0&&lw.length>st[0].length+2)r=st[1]+lw.slice(st[0].length)});
+    if(!r)return w;
+    return w[0]!==w[0].toLowerCase()?r[0].toUpperCase()+r.slice(1):r;
+  });
+};
 Sprache.saeubern=function(t){return t.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}️]/gu,'').replace(/\s+/g,' ').trim()};
 Sprache.roh=function(text){
   if(Sprache.rohC[text])return Sprache.rohC[text];
@@ -88,7 +99,7 @@ Sprache.roh=function(text){
   return Sprache.rohC[text]=pr;
 };
 Sprache.zeile=function(text,f,g){
-  var t=Sprache.saeubern(text);
+  var t=Sprache.aussprache(Sprache.saeubern(text));
   if(!t)return Promise.reject(new Error('leer'));
   if(Sprache.modus=='super'){
     var vs=Sprache.superStimme(f),tp=Sprache.STEMPO[g]||1.05,k2='S|'+t+'|'+vs+'|'+tp;
