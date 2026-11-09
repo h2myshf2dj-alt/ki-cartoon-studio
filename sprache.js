@@ -55,7 +55,9 @@ Sprache.superLaden=async function(prog){
     P('Stimme wird geprüft …');
     r=await Super.sprich('Hallo.','M1',{});
   }
-  if(Sprache.spitze(r.x)<0.0005)throw new Error('Die Stimme ist stumm ('+(Super.backend||'?')+')');
+  var pk=Sprache.spitze(r.x);
+  if(pk<0.0005)throw new Error('Die Stimme ist stumm ('+(Super.backend||'?')+')');
+  Sprache.info=(Sprache.info?Sprache.info+', ':'')+'Probe ok';
   Sprache.geprueft=true;
 };
 Sprache.spitze=function(x){var m=0;for(var i=0;i<x.length;i++){var v=x[i];if(v!==v){x[i]=0;continue}if(v<0)v=-v;if(v>m)m=v}if(m>1)for(var j=0;j<x.length;j++)x[j]=Math.max(-1,Math.min(1,x[j]));return m};

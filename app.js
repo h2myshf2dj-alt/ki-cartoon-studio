@@ -63,7 +63,7 @@ function zeige(s){
     '<button class="b2" onclick="zeige(\'figuren\')">🐶 Meine Figuren</button>'+
     '<button class="b3" onclick="zeige(\'geschichten\')">📖 Meine Geschichten</button>'+
     '<button class="b4" onclick="bald()">⭐ Vorlagen</button>'+
-    '<button onclick="bald()">⚙️ Einstellungen</button></div>';
+    '<button onclick="bald()">⚙️ Einstellungen</button></div><p class="sub" style="margin-top:24px;font-size:13px">Version '+(window.APPV||'?')+'</p>';
   }
   if(s=='figuren'){
     h='<button class="zurueck" onclick="zeige(\'home\')">← Zurück</button><h2>🐶 Meine Figuren</h2>'+

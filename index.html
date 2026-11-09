@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="de"><head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cartoon Studio">
@@ -44,21 +45,19 @@ textarea,select{width:100%;box-sizing:border-box;font-size:17px;padding:10px;bor
 input{width:100%;box-sizing:border-box;font-size:20px;padding:14px;border-radius:14px;border:3px solid #ddd}
 </style></head><body>
 <div id="app"></div>
-<script src="daten.js?v=21"></script>
-<script src="svg.js?v=21"></script>
-<script src="svg_kopf.js?v=21"></script>
-<script src="svg_mimik.js?v=21"></script>
-<script src="svg_tier.js?v=21"></script>
-<script src="gen.js?v=21"></script>
-<script src="geschichten.js?v=21"></script>
-<script src="gedit.js?v=21"></script>
-<script src="stimme.js?v=21"></script>
-<script src="analyse.js?v=21"></script>
-<script src="supertonic.js?v=3"></script>
-<script src="sprache.js?v=21"></script>
-<script src="klang.js?v=21"></script>
-<script src="buehne.js?v=21"></script>
-<script src="aufnahme.js?v=2"></script>
-<script src="film.js?v=21"></script>
-<script src="app.js?v=21"></script>
+<script>
+(function(){
+  var L=['daten.js','svg.js','svg_kopf.js','svg_mimik.js','svg_tier.js','gen.js','geschichten.js','gedit.js','stimme.js','analyse.js','supertonic.js','sprache.js','klang.js','buehne.js','aufnahme.js','film.js','app.js'];
+  function los(v){
+    window.APPV=window.APPV||v;
+    L.forEach(function(n){var e=document.createElement('script');e.src=n+'?v='+v;e.async=false;document.body.appendChild(e)});
+  }
+  var x=document.createElement('script'),fertig=false;
+  x.src='version.js?t='+Date.now();
+  x.onload=function(){if(!fertig){fertig=true;los(window.APPV||22)}};
+  x.onerror=function(){if(!fertig){fertig=true;los(22)}};
+  setTimeout(function(){if(!fertig){fertig=true;los(22)}},4000);
+  document.body.appendChild(x);
+})();
+</script>
 </body></html>

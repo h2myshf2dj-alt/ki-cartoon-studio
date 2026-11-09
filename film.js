@@ -14,7 +14,7 @@ function filmEnde(){filmStop();clearInterval(fTimer);fTimer=null}
 SCREENS.film=function(){
   var g=GS[gi];
   setTimeout(function(){buehneNeu();buehneZeichnen();schleife()},0);
-  return '<button class="zurueck" onclick="filmEnde();zeige(\'gedit\')">← Zurück</button><h2>🎬 '+esc(g.titel)+'</h2><div id="buehne" class="buehne"></div><div id="untertitel" class="untertitel">Tippe auf „Abspielen“.</div><div id="fstatus" class="fstatus"></div><button class="gross" onclick="filmStart()">▶ Abspielen</button><button class="gross" style="background:#06a77d" onclick="filmStart(true)">🎥 Als Video speichern</button><div id="fvideo"></div><div style="display:flex;gap:10px"><button id="bm" class="klein" style="flex:1" onclick="kMusik()">'+kText('m')+'</button><button id="bf" class="klein" style="flex:1" onclick="kFx()">'+kText('f')+'</button></div><button id="bs" class="klein" style="width:100%" onclick="kStimme()">'+kText('s')+'</button><button class="gross" style="background:#999" onclick="filmStop()">■ Stopp</button><div style="height:40px"></div>';
+  return '<button class="zurueck" onclick="filmEnde();zeige(\'gedit\')">← Zurück</button><h2>🎬 '+esc(g.titel)+'</h2><div id="buehne" class="buehne"></div><div id="untertitel" class="untertitel">Tippe auf „Abspielen“.</div><div id="fstatus" class="fstatus"></div><button class="gross" onclick="filmStart()">▶ Abspielen</button><button class="gross" style="background:#06a77d" onclick="filmStart(true)">🎥 Als Video speichern</button><div id="fvideo"></div><div style="display:flex;gap:10px"><button id="bm" class="klein" style="flex:1" onclick="kMusik()">'+kText('m')+'</button><button id="bf" class="klein" style="flex:1" onclick="kFx()">'+kText('f')+'</button></div><button id="bs" class="klein" style="width:100%" onclick="kStimme()">'+kText('s')+'</button><button class="gross" style="background:#999" onclick="filmStop()">■ Stopp</button><p class="sub" style="margin-top:14px;font-size:13px">Version '+(window.APPV||'?')+'</p><div style="height:30px"></div>';
 };
 function schleife(){
   clearInterval(fTimer);
@@ -104,8 +104,8 @@ async function filmStart(rec){
   var voice=Sprache.an,pro=[];
   if(voice){
     try{
-      ut.innerHTML='🗣 Stimme wird geladen …';fStatus('Beim ersten Mal kann das etwas dauern (WLAN empfohlen).');
-      await Sprache.laden(function(p){ut.innerHTML='🗣 '+(typeof p=='string'?p:'Stimme wird geladen: '+p+' %')});
+      ut.innerHTML='🗣 Stimme wird geladen …';fStatus('Beim ersten Mal kann das etwas dauern (WLAN empfohlen).');var tl=Date.now();
+      await Sprache.laden(function(p){ut.innerHTML='🗣 '+(typeof p=='string'?p:'Stimme wird geladen: '+p+' %');fStatus('⏱ '+Math.round((Date.now()-tl)/1000)+' s'+(Sprache.info?' · '+Sprache.info:''))});
       if(my!=tok)return;
       items.forEach(function(it,k){var f=it.wer?figInfo(it.wer):null;pro[k]=Sprache.zeile(it.t,f,it.g);pro[k].catch(function(){})});
     }catch(e){
@@ -116,11 +116,18 @@ async function filmStart(rec){
   }
   if(my!=tok)return;
   if(voice){
+    var t0=Date.now(),tz=Date.now(),jj=0,uhr=setInterval(function(){
+      if(my!=tok){clearInterval(uhr);return}
+      fStatus('⏱ '+Math.round((Date.now()-t0)/1000)+' s · Satz '+(jj+1)+' seit '+Math.round((Date.now()-tz)/1000)+' s · Technik: '+(Sprache.modus=='super'?(Super.backend||'?'):Sprache.modus)+(Sprache.info?' · '+Sprache.info:''));
+    },1000);
     for(var j=0;j<items.length;j++){
+      jj=j;tz=Date.now();
       ut.innerHTML='🗣 Stimmen werden vorbereitet: '+(j+1)+' von '+items.length;
-      try{await pro[j]}catch(e){}
-      if(my!=tok)return;
+      try{await Promise.race([pro[j],warten(180000).then(function(){throw new Error('Satz dauert zu lange (über 3 Minuten)')})])}
+      catch(e){Sprache.fehler=String(e&&e.message||e);pro[j]=Promise.reject(e);pro[j].catch(function(){})}
+      if(my!=tok){clearInterval(uhr);return}
     }
+    clearInterval(uhr);fStatus('');
   }
   if(rec){
     REC_FEHL=0;
