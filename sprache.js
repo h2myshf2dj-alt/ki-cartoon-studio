@@ -8,7 +8,24 @@ Sprache.setModus=function(m){
 };
 Sprache.SUPER={Mann:'M1','Erzähler':'M2',Frau:'F1',Kind:'F3',Roboter:'M3'};
 Sprache.STEMPO={froh:1.1,traurig:0.92,wuetend:1.12,erstaunt:1.08,angst:1.15,muede:0.88,verliebt:0.98,nachdenklich:0.95};
+Sprache.ZUT={};
+Sprache.POOL={Mann:['M1','M4','M5','M3'],Frau:['F1','F2','F4','F5','F3'],Kind:['F3','F5','F4','F2'],Roboter:['M3','M5','M4']};
+Sprache.rolle=function(f){return f.art=='Roboter'?'Roboter':(f.alter=='Kind'?'Kind':(f.geschl=='weiblich'?'Frau':'Mann'))};
+/* Jede Figur eines Films bekommt eine eigene Stimme (Erzähler M2 bleibt frei) */
+Sprache.verteilen=function(liste){
+  var benutzt={M2:1},z={};
+  liste.forEach(function(f){if(f&&f.stimme){z[f.name]=f.stimme;benutzt[f.stimme]=1}});
+  liste.forEach(function(f){
+    if(!f||z[f.name])return;
+    var pool=Sprache.POOL[Sprache.rolle(f)]||Sprache.POOL.Mann,v=null;
+    pool.forEach(function(x){if(!v&&!benutzt[x])v=x});
+    if(!v)['M1','F1','M4','F2','M5','F4','M3','F5','F3'].forEach(function(x){if(!v&&!benutzt[x])v=x});
+    v=v||pool[0];z[f.name]=v;benutzt[v]=1;
+  });
+  Sprache.ZUT=z;
+};
 Sprache.superStimme=function(f){
+  if(f&&f.name&&Sprache.ZUT[f.name])return Sprache.ZUT[f.name];
   var n=!f?'Erzähler':(f.art=='Roboter'?'Roboter':(f.alter=='Kind'?'Kind':(f.geschl=='weiblich'?'Frau':'Mann'))),u={};
   try{u=JSON.parse(localStorage.getItem('superstimmen')||'{}')}catch(e){}
   return u[n]||Sprache.SUPER[n];
