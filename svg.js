@@ -1,5 +1,5 @@
 function norm(f){
-  var d={art:f.typ||'Mensch',geschl:'weiblich',alter:'Erwachsen',haut:'#f1c27d',haar:'#6b4423',haarlaenge:'Mittel',augen:'#5a3a1e',oberteil:'Shirt',kleid:'#3a86ff',rasse:'',fell:'#e0b25a',extra:'Keins',frisur:'Glatt',bart:'Keiner',sommer:'Nein',hose:'#3b5b92'};
+  var d={art:f.typ||'Mensch',geschl:'weiblich',alter:'Erwachsen',haut:'#f1c27d',haar:'#6b4423',haarlaenge:'Mittel',augen:'#5a3a1e',oberteil:'Shirt',kleid:'#3a86ff',rasse:'',fell:'#e0b25a',extra:'Keins',kopf:'Rund',frisur:'Glatt',bart:'Keiner',sommer:'Nein',hose:'#3b5b92'};
   for(var k in f)d[k]=f[k];
   if(!d.rasse&&RASSEN[d.art])d.rasse=RASSEN[d.art][0];
   return d;
@@ -8,10 +8,13 @@ var ST='stroke="#2b1a12" stroke-opacity=".8" stroke-width="2.6" stroke-linejoin=
 var DEFS='<defs><linearGradient id="sh" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient><radialGradient id="hl" cx=".35" cy=".28" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>';
 
 function geo(f){
-  var K=f.alter=='Kind',M=f.geschl=='männlich';
-  if(K)return {top:168,bot:202,tw:26,bw:24,wv:24,armX:31,armL:24,hand:9,legTop:198,legW:11,gap:3,hem:214,sh:10};
-  if(M)return {top:140,bot:196,tw:46,bw:36,wv:36,armX:52,armL:46,hand:11,legTop:190,legW:16,gap:2,hem:208,sh:14};
-  return {top:140,bot:196,tw:33,bw:35,wv:25,armX:39,armL:42,hand:10,legTop:190,legW:13,gap:3,hem:208,sh:12};
+  var K=f.alter=='Kind',M=f.geschl=='männlich',H=f.art=='Mensch';
+  if(H&&K)return {chin:126,hs:0.66,neck:1,top:130,bot:172,tw:28,bw:26,wv:24,armX:33,armL:36,hand:8,legTop:168,legW:11,gap:3,hem:202,sh:10};
+  if(H&&M)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:44,bw:34,wv:33,armX:50,armL:56,hand:10,legTop:156,legW:17,gap:2,hem:206,sh:14};
+  if(H)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:36,bw:36,wv:25,armX:42,armL:52,hand:9,legTop:156,legW:14,gap:3,hem:206,sh:12};
+  if(K)return {chin:174,hs:1,top:168,bot:202,tw:26,bw:24,wv:24,armX:31,armL:24,hand:9,legTop:198,legW:11,gap:3,hem:214,sh:10};
+  if(M)return {chin:148,hs:0.92,top:140,bot:196,tw:46,bw:36,wv:36,armX:52,armL:46,hand:11,legTop:190,legW:16,gap:2,hem:208,sh:14};
+  return {chin:148,hs:0.92,top:140,bot:196,tw:33,bw:35,wv:25,armX:39,armL:42,hand:10,legTop:190,legW:13,gap:3,hem:208,sh:12};
 }
 function rumpfPfad(G,kleid){
   var c=100,t=G.top,b=G.bot,w=(t+b)/2+6;
@@ -28,10 +31,10 @@ function koerper(f,G,haut){
     g+='<rect x="'+x+'" y="'+ay+'" width="16" height="'+G.armL+'" rx="8" fill="'+ac+'" '+ST+'/>';
     if(lang&&!R)g+='<rect x="'+x+'" y="'+(ay+G.armL-9)+'" width="16" height="9" rx="4" fill="'+d+'"/>';
     else if(!R)g+='<rect x="'+(x-1)+'" y="'+(ay-1)+'" width="18" height="19" rx="8" fill="'+k+'" '+ST+'/>';
-    g+='<circle cx="'+cx+'" cy="'+hy+'" r="'+G.hand+'" fill="'+haut+'" '+ST+'/>';
+    g+=G.neck?'<ellipse cx="'+cx+'" cy="'+(hy+2)+'" rx="'+(G.hand*0.85)+'" ry="'+(G.hand*1.15)+'" fill="'+haut+'" '+ST+'/>':'<circle cx="'+cx+'" cy="'+hy+'" r="'+G.hand+'" fill="'+haut+'" '+ST+'/>';
     s+=ang?'<g transform="rotate('+ang+' '+cx+' '+(t+10)+')">'+g+'</g>':g;
   });
-  var P=rumpfPfad(G,kl||o=='Rock'&&false);
+  if(G.neck)s+='<rect x="93" y="'+(t-14)+'" width="14" height="24" rx="5" fill="'+haut+'" '+ST+'/><path d="M93 '+(t-4)+' Q100 '+(t+6)+' 107 '+(t-4)+'" fill="#000" opacity=".12"/>';
   s+='<path d="'+rumpfPfad(G,kl)+'" fill="'+k+'" '+ST+'/><path d="'+rumpfPfad(G,kl)+'" fill="url(#sh)"/>';
   if(R){
     var ph=Math.min(28,b-t-26);
@@ -125,12 +128,12 @@ function schwanzR(f,bahn){
 function svg(f){
   f=norm(f);
   var K=f.alter=='Kind',M=f.art=='Mensch',R=f.art=='Roboter',G=geo(f);
-  var T='<g transform="'+(K?'translate(100 118) translate(-100 -100)':'translate(100 148) scale(0.92) translate(-100 -156)')+'">';
+  var T='<g transform="translate(100 '+G.chin+') scale('+G.hs+') translate(-100 -156)">';
   var haut=M?f.haut:f.fell;
   var s='<svg viewBox="0 0 200 240">'+DEFS+'<ellipse cx="100" cy="236" rx="58" ry="5" fill="#000" opacity=".12"/>'+schwanz(f)+beine(f,G,haut);
-  s+=T+(M?haarHinten(f):R?roboterHinten(f):tierHinten(f))+'</g>';
+  s+=T+(M?haarWrap(f,haarHinten(f)):R?roboterHinten(f):tierHinten(f))+'</g>';
   s+=koerper(f,G,haut);
-  s+=T+ohren(f,haut)+kopf(f,haut)+wangen(f)+augen(f)+brauen(f)+sommer(f)+bart(f)+mundSvg(f)+deko(f);
-  if(M)s+=haarVorn(f);
+  s+=T+ohren(f,haut)+kopf(f,haut)+wangen(f)+augen(f)+brauen(f)+sommer(f)+haarWrap(f,bart(f))+mundSvg(f)+deko(f);
+  if(M)s+=haarWrap(f,haarVorn(f));
   return s+extras(f)+'</g></svg>';
 }

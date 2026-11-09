@@ -11,6 +11,7 @@ var FARBEN={
   fell:['#e0b25a','#8b5a2b','#c68642','#ffffff','#9e9e9e','#222222'],
   robo:['#b0bec5','#ffb703','#e63946','#3a86ff','#06a77d','#8338ec']
 };
+var KOPFFORMEN=['Rund','Oval','Eckig','Herz','Lang','Breit'];
 var FRISUREN=['Glatt','Locken','Zöpfe','Dutt','Stachelig'];
 var BAERTE=['Keiner','Schnurrbart','Vollbart'];
 var OBERTEILE=['Shirt','Streifenshirt','Pulli','Jacke','Kleid','Rock'];

@@ -44,7 +44,7 @@ function pose(a,i,sp,m,t,tm){
 }
 function buehneZeichnen(){
   var el=document.getElementById('buehne');if(!el)return;
-  var g=GS[gi],n=B.A.length,sc=n<=2?0.62:(n==3?0.55:0.46),t=jetzt(),it=B.item,tm=t-B.satz0,te=t-B.sz0;
+  var g=GS[gi],n=B.A.length,sc=n<=2?0.74:(n==3?0.6:0.5),t=jetzt(),it=B.item,tm=t-B.satz0,te=t-B.sz0;
   var sm=(it&&B.spr>=0)?it.g:'neutral',fig='',emo='',zx=200,zz=1;
   B.A.forEach(function(a,i){
     var sp=(i==B.spr),cx=400/n*(i+0.5),m=sp?sm:(B.spr>=0&&tm>0.3&&REAG[sm]||'neutral');
@@ -58,12 +58,12 @@ function buehneZeichnen(){
     }
     var k=sc*(sp?1.07:1),by=288+P.dy-P.hop;
     fig+='<g transform="translate('+(cx+P.dx).toFixed(1)+' '+by.toFixed(1)+') rotate('+P.tilt.toFixed(1)+') scale('+(k*P.sx).toFixed(3)+' '+(k*P.sy).toFixed(3)+') translate(-100 -240)">'+inner+'</g>';
-    if(sp&&DKE[m])emo+='<text x="'+(cx+34*k+P.dx).toFixed(0)+'" y="'+(by-205*k*P.sy+Math.sin(t*4)*3).toFixed(0)+'" font-size="'+Math.round(30*k/0.6)+'" text-anchor="middle">'+DKE[m]+'</text>';
-    if(sp&&(m=='erstaunt'||m=='wuetend'||m=='angst')){zx=cx;zz=1+0.12*leicht(Math.min(1,tm*4))}
+    if(sp&&DKE[m])emo+='<text x="'+(cx+34*k+P.dx).toFixed(0)+'" y="'+(by-((f.art=='Mensch')?(f.alter=='Kind'?200:224):205)*k*P.sy+Math.sin(t*4)*3).toFixed(0)+'" font-size="'+Math.round(30*k/0.6)+'" text-anchor="middle">'+DKE[m]+'</text>';
+    if(sp&&B.spr>=0&&n>1){zx=cx;zz=1.1+((m=='erstaunt'||m=='wuetend'||m=='angst')?0.1:0)*leicht(Math.min(1,tm*4))}
   });
   var pr='';
   B.props.forEach(function(p,j,all){
-    var sz=64*Math.max(0.01,leicht(Math.min(1,(t-p.t0)/0.45))),x=all.length==1?200:(j?270:130),y=108+Math.sin(t*3+j)*4;
+    var sz=64*Math.max(0.01,leicht(Math.min(1,(t-p.t0)/0.45))),x=all.length==1?200:(j?270:130),y=86+Math.sin(t*3+j)*4;
     pr+='<ellipse cx="'+x+'" cy="'+(y+44)+'" rx="'+(sz*0.45)+'" ry="5" fill="#000" opacity=".12"/><text x="'+x+'" y="'+y+'" font-size="'+sz.toFixed(0)+'" text-anchor="middle" dominant-baseline="central">'+p.e+'</text>';
   });
   var s='<svg viewBox="0 0 400 300"><g transform="translate('+zx+' 200) scale('+zz.toFixed(3)+') translate('+(-zx)+' -200)">'+hintergrund(g.kat)+pr+fig+emo+'</g></svg>';

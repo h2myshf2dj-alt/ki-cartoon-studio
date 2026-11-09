@@ -1,3 +1,19 @@
+var KOPF={Rund:{w:56,t:44},Oval:{w:50,t:40},Eckig:{w:54,t:46},Herz:{w:56,t:44},Lang:{w:46,t:36},Breit:{w:60,t:52}};
+function kf(f){return KOPF[f.kopf]||KOPF.Rund}
+function kopfPfad(f){
+  var K=f.kopf;
+  if(K=='Oval')return 'M100 40 C136 40 150 68 150 98 C150 130 128 156 100 156 C72 156 50 130 50 98 C50 68 64 40 100 40Z';
+  if(K=='Eckig')return 'M46 76 Q46 46 78 46 H122 Q154 46 154 76 L151 118 Q147 156 118 156 H82 Q53 156 49 118 Z';
+  if(K=='Herz')return 'M44 80 Q44 44 100 44 Q156 44 156 80 Q156 110 124 138 Q108 156 100 156 Q92 156 76 138 Q44 110 44 80 Z';
+  if(K=='Lang')return 'M100 36 C128 36 146 64 146 96 C146 132 126 156 100 156 C74 156 54 132 54 96 C54 64 72 36 100 36Z';
+  if(K=='Breit')return 'M100 52 C140 52 160 78 160 106 C160 134 136 156 100 156 C64 156 40 134 40 106 C40 78 60 52 100 52Z';
+  return 'M100 44 A56 56 0 1 1 99.9 44Z';
+}
+function haarWrap(f,s){
+  var k=kf(f);
+  if(!s||f.art!='Mensch'||(k.w==56&&k.t==44))return s;
+  return '<g transform="translate(100 156) scale('+(k.w/56).toFixed(3)+' '+((156-k.t)/112).toFixed(3)+') translate(-100 -156)">'+s+'</g>';
+}
 function locken(f,pts,r){
   return pts.map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+r+'" fill="'+f.haar+'" '+ST+'/>'}).join('');
 }
@@ -36,15 +52,16 @@ function roboterHinten(f){
   return '<line x1="100" y1="46" x2="100" y2="20" stroke="#555" stroke-width="5"/><circle cx="100" cy="18" r="9" fill="#e63946" '+ST+'/><circle cx="97" cy="15" r="2.5" fill="#fff" opacity=".7"/>';
 }
 function ohren(f,haut){
-  if(f.art=='Mensch')return '<ellipse cx="44" cy="104" rx="9" ry="13" fill="'+haut+'" '+ST+'/><ellipse cx="45" cy="105" rx="4" ry="7" fill="'+dk(haut,0.85)+'"/><ellipse cx="156" cy="104" rx="9" ry="13" fill="'+haut+'" '+ST+'/><ellipse cx="155" cy="105" rx="4" ry="7" fill="'+dk(haut,0.85)+'"/>';
+  if(f.art=='Mensch'){var W=kf(f).w,a=100-W,b=100+W;return '<ellipse cx="'+a+'" cy="104" rx="9" ry="13" fill="'+haut+'" '+ST+'/><ellipse cx="'+(a+1)+'" cy="105" rx="4" ry="7" fill="'+dk(haut,0.85)+'"/><ellipse cx="'+b+'" cy="104" rx="9" ry="13" fill="'+haut+'" '+ST+'/><ellipse cx="'+(b-1)+'" cy="105" rx="4" ry="7" fill="'+dk(haut,0.85)+'"/>'}
   if(f.art=='Roboter')return '<rect x="32" y="86" width="16" height="30" rx="5" fill="#78909c" '+ST+'/><rect x="152" y="86" width="16" height="30" rx="5" fill="#78909c" '+ST+'/><circle cx="40" cy="101" r="3" fill="#455a64"/><circle cx="160" cy="101" r="3" fill="#455a64"/>';
   return '';
 }
 function kopf(f,haut){
   var R=f.art=='Roboter',s;
   if(R)s='<rect x="44" y="46" width="112" height="100" rx="20" fill="'+haut+'" '+ST+'/><rect x="44" y="46" width="112" height="100" rx="20" fill="url(#hl)"/><rect x="82" y="54" width="36" height="8" rx="4" fill="#37474f"/><circle cx="90" cy="58" r="2" fill="#ff6b6b"/><circle cx="100" cy="58" r="2" fill="#ffd23f"/><circle cx="110" cy="58" r="2" fill="#06d6a0"/>';
+  else if(f.art=='Mensch')s='<path d="'+kopfPfad(f)+'" fill="'+haut+'" '+ST+'/>';
   else s='<circle cx="100" cy="100" r="56" fill="'+haut+'" '+ST+'/>';
-  if(f.art=='Mensch')s+='<circle cx="100" cy="100" r="56" fill="url(#hl)"/><path d="M100 104 Q94 113 101 114" stroke="#0006" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  if(f.art=='Mensch')s+='<path d="'+kopfPfad(f)+'" fill="url(#hl)"/><path d="M100 104 Q94 113 101 114" stroke="#0006" stroke-width="3" fill="none" stroke-linecap="round"/>';
   else if(!R)s+=tierGesicht(f)+'<circle cx="100" cy="100" r="56" fill="url(#hl)"/>';
   return s;
 }
@@ -62,6 +79,10 @@ function bart(f){
 }
 function extras(f){
   var e=f.extra;
+  if(f.art=='Mensch'&&/Hut|Mütze|Krone|Kopfhörer|Schleife/.test(e)){var q=f.extra;f=Object.assign({},f,{extra:'Keins'});return haarWrap(f,extrasR(q))}
+  return extrasR(e);
+}
+function extrasR(e){
   if(e=='Hut')return '<rect x="68" y="22" width="64" height="26" rx="8" fill="#6d4c41" '+ST+'/><rect x="50" y="44" width="100" height="9" rx="4" fill="#6d4c41" '+ST+'/><rect x="68" y="38" width="64" height="6" fill="#e63946"/>';
   if(e=='Mütze')return '<path d="M46 84 Q44 30 100 28 Q156 30 154 84 Z" fill="#e63946" '+ST+'/><rect x="43" y="74" width="114" height="15" rx="7" fill="#fff" '+ST+'/><circle cx="100" cy="26" r="10" fill="#fff" '+ST+'/>';
   if(e=='Krone')return '<polygon points="64,50 68,20 85,38 100,14 115,38 132,20 136,50" fill="#ffd23f" '+ST+'/><circle cx="100" cy="36" r="4" fill="#e63946"/><circle cx="80" cy="42" r="3" fill="#3a86ff"/><circle cx="120" cy="42" r="3" fill="#06d6a0"/>';

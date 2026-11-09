@@ -43,7 +43,7 @@ function bauen(){
   if(!R)h+=chips('Geschlecht',['weiblich','männlich'],'geschl',false)+chips('Alter',['Kind','Erwachsen'],'alter',false);
   if(RASSEN[a])h+=chips('Rasse',RASSEN[a],'rasse',false);
   if(M){
-    h+=chips('Hautfarbe',FARBEN.haut,'haut',true)+chips('Haarlänge',['Glatze','Kurz','Mittel','Lang'],'haarlaenge',false);
+    h+=chips('Kopfform',KOPFFORMEN,'kopf',false)+chips('Hautfarbe',FARBEN.haut,'haut',true)+chips('Haarlänge',['Glatze','Kurz','Mittel','Lang'],'haarlaenge',false);
     if(neu.haarlaenge!='Glatze')h+=chips('Frisur',FRISUREN,'frisur',false)+chips('Haarfarbe',FARBEN.haar,'haar',true);
     if(neu.geschl=='männlich'&&neu.alter=='Erwachsen')h+=chips('Bart',BAERTE,'bart',false);
     h+=chips('Sommersprossen',['Nein','Ja'],'sommer',false);
