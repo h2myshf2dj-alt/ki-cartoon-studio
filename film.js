@@ -78,7 +78,7 @@ function spielen(z){
 function freischalten(){try{AUD.pause();AUD.src=URL.createObjectURL(Stimme.wav(new Float32Array(2205),22050));AUD.play().catch(function(){})}catch(e){}}
 function fStatus(s){var e=document.getElementById('fstatus');if(e)e.innerHTML=s}
 function filmStop(){
-  tok++;laeuft=false;B.spr=-1;B.lvl=0;B.fb=false;B.env=null;B.envT0=0;B.item=null;
+  tok++;laeuft=false;B.karte=null;B.spr=-1;B.lvl=0;B.fb=false;B.env=null;B.envT0=0;B.item=null;
   if(WAQ){try{WAQ.onended=null;WAQ.stop()}catch(e){}WAQ=null}
   Rec.abbrechen();
   try{AUD.onended=null;AUD.pause()}catch(e){}
@@ -141,6 +141,9 @@ async function filmStart(rec){
     await warten(700);if(my!=tok)return;
   }
   Klang.start(g.kat);laeuft=true;B.ein=true;
+  B.A=[];besetzen(besetzung(g,0),false);B.szene=0;B.sz0=jetzt();
+  B.karte={txt:g.titel||'Mein Film',emo:'🎬',t0:jetzt(),d:2.8};
+  await warten(3000);if(my!=tok)return;B.karte=null;
   if(!UTAN)ut.style.display='none';
   for(var k=0;k<items.length;k++){
     var it=items[k],f=it.wer?figInfo(it.wer):null,z=null;
@@ -154,8 +157,12 @@ async function filmStart(rec){
       }
       if(rec&&z&&!z.x){REC_FEHL++;Sprache.fehler='Stimmdaten fehlen'}
     }
-    if(it.s!=B.szene){B.szene=it.s;B.sz0=jetzt();B.props=[]}
-    B.item=it;B.spr=it.wer?Math.max(0,g.figuren.indexOf(it.wer)):-1;B.satz0=jetzt();
+    if(it.s!=B.szene){
+      B.szene=it.s;B.sz0=jetzt();B.props=[];
+      var neu=besetzung(g,it.s),kommt=neu.some(function(nm){return !B.A.some(function(a){return a.n==nm})});
+      besetzen(neu,false);if(kommt){await warten(1300);if(my!=tok)return}
+    }
+    B.item=it;B.spr=it.wer?B.A.map(function(a){return a.n}).indexOf(it.wer):-1;B.satz0=jetzt();
     var rq=requisiten(it.t);
     if(rq.length&&rq.join('')!=B.props.map(function(p){return p.e}).join('')){B.props=rq.map(function(e){return {e:e,t0:jetzt()}});Klang.effekt('pop')}
     var wq=z?(Sprache.modus=='super'?'Supertonic '+Sprache.superStimme(f)+((Sprache.FXZ[f?f.name:'__erz']||'normal')!='normal'?' · '+Stimme.EFFEKTE[Sprache.FXZ[f?f.name:'__erz']].n:'')+' · '+(Super.backend||'?'):'Thorsten'):'⚠️ iPhone-Ersatzstimme'+(Sprache.fehler?' ('+esc(Sprache.fehler)+')':'');
@@ -169,7 +176,7 @@ async function filmStart(rec){
     await warten(120);
     if(my!=tok)return;
   }
-  B.item=null;laeuft=false;Klang.stop();Klang.effekt('ende');ut.style.display='';ut.innerHTML='🎬 Ende';fStatus('');
+  B.item=null;laeuft=false;Klang.stop();Klang.effekt('ende');B.karte={txt:'Ende',emo:'✨',t0:jetzt(),d:999};ut.style.display='';ut.innerHTML='🎬 Ende';fStatus('');
   Rec.wer='';Rec.ut='';
   if(rec){
     fStatus('🔴 Aufnahme wird abgeschlossen …');
