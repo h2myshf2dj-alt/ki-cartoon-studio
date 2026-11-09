@@ -4,8 +4,8 @@ function kText(w){
   if(w=='f')return Klang.fx?'🔊 Geräusche: an':'🔊 Geräusche: aus';
   return {super:'🗣 Stimme: Supertonic (neu)',hoch:'🗣 Stimme: Thorsten hoch',normal:'🗣 Stimme: Thorsten normal (schneller)',iphone:'🗣 Stimme: iPhone (nicht für MP4)'}[Sprache.modus];
 }
-function kSpeichern(){try{localStorage.setItem('klang',JSON.stringify({m:Klang.musik,f:Klang.fx,s:Sprache.an,q:Sprache.modus}))}catch(e){}}
-try{var kk=JSON.parse(localStorage.getItem('klang')||'{}');if(kk.m===false)Klang.musik=false;if(kk.f===false)Klang.fx=false;if(kk.q)Sprache.setModus(kk.q);else if(kk.s===false)Sprache.setModus('iphone')}catch(e){}
+function kSpeichern(){try{localStorage.setItem('klang',JSON.stringify({m:Klang.musik,f:Klang.fx,s:Sprache.an,q:Sprache.modus,v:2}))}catch(e){}}
+try{var kk=JSON.parse(localStorage.getItem('klang')||'{}');if(kk.m===false)Klang.musik=false;if(kk.f===false)Klang.fx=false;if(kk.v==2&&kk.q)Sprache.setModus(kk.q)}catch(e){}
 function kMusik(){Klang.musik=!Klang.musik;kSpeichern();document.getElementById('bm').innerHTML=kText('m');if(!Klang.musik)Klang.stop();else if(laeuft)Klang.start(GS[gi].kat)}
 function kFx(){Klang.fx=!Klang.fx;kSpeichern();document.getElementById('bf').innerHTML=kText('f')}
 function kStimme(){Sprache.setModus({super:'hoch',hoch:'normal',normal:'iphone',iphone:'super'}[Sprache.modus]);kSpeichern();document.getElementById('bs').innerHTML=kText('s')}

@@ -1,4 +1,4 @@
-var Sprache={T:null,warte:Promise.resolve(),rohC:{},cache:{},an:true,fehler:'',modus:'hoch',geladen:'',VID:'de_DE-thorsten-high',
+var Sprache={T:null,warte:Promise.resolve(),rohC:{},cache:{},an:true,fehler:'',modus:'super',geladen:'',VID:'de_DE-thorsten-high',
 VIDS:{hoch:'de_DE-thorsten-high',normal:'de_DE-thorsten_emotional-medium'},
 PRE:{Mann:{st:0,tempo:1,bass:0,mid:0,hoch:0},Frau:{st:3.5,tempo:1,bass:-2,mid:1,hoch:2},Kind:{st:5.5,tempo:1,bass:-3,mid:1,hoch:2},'Erzähler':{st:0,tempo:1,bass:2,mid:0,hoch:0},Roboter:{st:-2,tempo:1,bass:-3,mid:6,hoch:2}},
 MOD:{froh:[0.5,1,0],traurig:[-0.5,1,0],wuetend:[0,1,2],erstaunt:[1,1,0],angst:[1,1,0],muede:[-0.5,1,0],verliebt:[0,1,0],nachdenklich:[0,1,0]}};
