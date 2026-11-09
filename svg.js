@@ -11,7 +11,7 @@ function geo(f){
   var K=f.alter=='Kind',M=f.geschl=='männlich',H=f.art=='Mensch';
   if(H&&K)return {chin:126,hs:0.66,neck:1,top:130,bot:172,tw:28,bw:26,wv:24,armX:33,armL:36,hand:8,legTop:168,legW:11,gap:3,hem:202,sh:10};
   if(H&&M)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:44,bw:34,wv:33,armX:50,armL:56,hand:10,legTop:156,legW:17,gap:2,hem:206,sh:14};
-  if(H)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:36,bw:36,wv:25,armX:42,armL:52,hand:9,legTop:156,legW:14,gap:3,hem:206,sh:12};
+  if(H)return {chin:92,hs:0.6,neck:1,top:98,bot:160,tw:28,bw:29,wv:20,armX:35,armL:52,hand:9,legTop:156,legW:12,gap:3,hem:206,sh:12};
   if(K)return {chin:174,hs:1,top:168,bot:202,tw:26,bw:24,wv:24,armX:31,armL:24,hand:9,legTop:198,legW:11,gap:3,hem:214,sh:10};
   if(M)return {chin:148,hs:0.92,top:140,bot:196,tw:46,bw:36,wv:36,armX:52,armL:46,hand:11,legTop:190,legW:16,gap:2,hem:208,sh:14};
   return {chin:148,hs:0.92,top:140,bot:196,tw:33,bw:35,wv:25,armX:39,armL:42,hand:10,legTop:190,legW:13,gap:3,hem:208,sh:12};
