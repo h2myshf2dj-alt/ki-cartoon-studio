@@ -40,8 +40,9 @@ Sprache.mod=function(p,g){
 };
 Sprache.info='';Sprache.geprueft=false;
 Sprache.superLaden=async function(prog){
-  var P=function(t){if(prog)prog(t)},k=false;
-  try{k=localStorage.getItem('superKompat')=='1'}catch(e){}
+  var P=function(t){if(prog)prog(t)},k=true;
+  try{if(localStorage.getItem('superSchnell')=='1')k=false}catch(e){}
+  if(Super.ok&&k&&Super.backend!='wasm')Super.freigeben();
   await Super.laden(prog,k);
   if(Sprache.geprueft)return;
   P('Stimme wird geprüft …');
@@ -79,7 +80,7 @@ Sprache.zeile=function(text,f,g){
     }).then(function(r){
       var pk=Sprache.spitze(r.x);
       if(pk<0.0005)throw new Error('Die Stimme ist stumm ('+(Super.backend||'?')+')');
-      if(pk<0.7){var g=0.85/pk;for(var i=0;i<r.x.length;i++)r.x[i]*=g}
+      if(pk<0.7&&pk>0.1){var g=0.85/pk;for(var i=0;i<r.x.length;i++)r.x[i]*=g}
       return r;
     }).then(function(r){return {url:URL.createObjectURL(Stimme.wav(r.x,r.rate)),env:Stimme.pegel(r.x,r.rate,24),dauer:r.x.length/r.rate,x:r.x,rate:r.rate}});
     p2.catch(function(){delete Sprache.cache[k2]});
