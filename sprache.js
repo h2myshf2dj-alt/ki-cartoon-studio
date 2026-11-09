@@ -6,7 +6,15 @@ Sprache.setModus=function(m){
   Sprache.modus=m;Sprache.an=(m!='iphone');
   if(Sprache.VIDS[m]&&Sprache.VIDS[m]!=Sprache.VID){Sprache.VID=Sprache.VIDS[m];Sprache.rohC={};Sprache.cache={}}
 };
+Sprache.SUPER={Mann:'M1','Erzähler':'M2',Frau:'F1',Kind:'F3',Roboter:'M3'};
+Sprache.STEMPO={froh:1.1,traurig:0.92,wuetend:1.12,erstaunt:1.08,angst:1.15,muede:0.88,verliebt:0.98,nachdenklich:0.95};
+Sprache.superStimme=function(f){
+  var n=!f?'Erzähler':(f.art=='Roboter'?'Roboter':(f.alter=='Kind'?'Kind':(f.geschl=='weiblich'?'Frau':'Mann'))),u={};
+  try{u=JSON.parse(localStorage.getItem('superstimmen')||'{}')}catch(e){}
+  return u[n]||Sprache.SUPER[n];
+};
 Sprache.laden=function(prog){
+  if(Sprache.modus=='super')return Super.laden(prog,false);
   if(Sprache.T&&Sprache.geladen==Sprache.VID)return Promise.resolve();
   var im=window.PiperTest?Promise.resolve(window.PiperTest):import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm');
   return im.then(function(m){
@@ -41,6 +49,13 @@ Sprache.roh=function(text){
 Sprache.zeile=function(text,f,g){
   var t=Sprache.saeubern(text);
   if(!t)return Promise.reject(new Error('leer'));
+  if(Sprache.modus=='super'){
+    var vs=Sprache.superStimme(f),tp=Sprache.STEMPO[g]||1.05,k2='S|'+t+'|'+vs+'|'+tp;
+    if(Sprache.cache[k2])return Sprache.cache[k2];
+    var p2=Super.sprich(t,vs,{tempo:tp}).then(function(r){return {url:URL.createObjectURL(Stimme.wav(r.x,r.rate)),env:Stimme.pegel(r.x,r.rate,24),dauer:r.x.length/r.rate}});
+    p2.catch(function(){delete Sprache.cache[k2]});
+    return Sprache.cache[k2]=p2;
+  }
   var p=Sprache.mod(Sprache.preset(f),g),key=t+'|'+JSON.stringify(p);
   if(Sprache.cache[key])return Sprache.cache[key];
   var pr=Sprache.roh(t).then(function(r){

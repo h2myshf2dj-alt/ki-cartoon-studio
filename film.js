@@ -2,13 +2,13 @@ var FI=0,tok=0,fTimer=null,AUD=new Audio(),stimmen=[],laeuft=false;
 function kText(w){
   if(w=='m')return Klang.musik?'🎵 Musik: an':'🎵 Musik: aus';
   if(w=='f')return Klang.fx?'🔊 Geräusche: an':'🔊 Geräusche: aus';
-  return {hoch:'🗣 Stimme: Thorsten hoch (beste)',normal:'🗣 Stimme: Thorsten normal (schneller)',iphone:'🗣 Stimme: iPhone (nicht für MP4)'}[Sprache.modus];
+  return {super:'🗣 Stimme: Supertonic (neu)',hoch:'🗣 Stimme: Thorsten hoch',normal:'🗣 Stimme: Thorsten normal (schneller)',iphone:'🗣 Stimme: iPhone (nicht für MP4)'}[Sprache.modus];
 }
 function kSpeichern(){try{localStorage.setItem('klang',JSON.stringify({m:Klang.musik,f:Klang.fx,s:Sprache.an,q:Sprache.modus}))}catch(e){}}
 try{var kk=JSON.parse(localStorage.getItem('klang')||'{}');if(kk.m===false)Klang.musik=false;if(kk.f===false)Klang.fx=false;if(kk.q)Sprache.setModus(kk.q);else if(kk.s===false)Sprache.setModus('iphone')}catch(e){}
 function kMusik(){Klang.musik=!Klang.musik;kSpeichern();document.getElementById('bm').innerHTML=kText('m');if(!Klang.musik)Klang.stop();else if(laeuft)Klang.start(GS[gi].kat)}
 function kFx(){Klang.fx=!Klang.fx;kSpeichern();document.getElementById('bf').innerHTML=kText('f')}
-function kStimme(){Sprache.setModus({hoch:'normal',normal:'iphone',iphone:'hoch'}[Sprache.modus]);kSpeichern();document.getElementById('bs').innerHTML=kText('s')}
+function kStimme(){Sprache.setModus({super:'hoch',hoch:'normal',normal:'iphone',iphone:'super'}[Sprache.modus]);kSpeichern();document.getElementById('bs').innerHTML=kText('s')}
 function filmOeffne(){FI=gi;zeige('film')}
 function filmEnde(){filmStop();clearInterval(fTimer);fTimer=null}
 SCREENS.film=function(){
@@ -83,7 +83,7 @@ async function filmStart(){
   if(voice){
     try{
       ut.innerHTML='🗣 Stimme wird geladen …';fStatus('Beim ersten Mal kann das etwas dauern (WLAN empfohlen).');
-      await Sprache.laden(function(p){ut.innerHTML='🗣 Stimme wird geladen: '+p+' %'});
+      await Sprache.laden(function(p){ut.innerHTML='🗣 '+(typeof p=='string'?p:'Stimme wird geladen: '+p+' %')});
       if(my!=tok)return;
       items.forEach(function(it,k){var f=it.wer?figInfo(it.wer):null;pro[k]=Sprache.zeile(it.t,f,it.g);pro[k].catch(function(){})});
     }catch(e){voice=false;Sprache.fehler=String(e&&e.message||e);ut.innerHTML='⚠️ Thorsten ist nicht verfügbar, nehme iPhone-Stimme.';await warten(1500)}
