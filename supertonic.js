@@ -49,6 +49,16 @@ Super.laden=function(prog,kompat){
   Super.laden_p.catch(function(){Super.laden_p=null;Super.ok=false});
   return Super.laden_p;
 };
+/* Neu starten, z. B. im sicheren Modus (nur WASM), wenn die schnelle Version nur Stille liefert */
+Super.neu_p=null;
+Super.neustart=function(kompat,prog){
+  if(Super.neu_p)return Super.neu_p;
+  Super.neu_p=Super.warte.then(function(){
+    Super.ok=false;Super.laden_p=null;Super.S={};
+    return Super.laden(prog,kompat);
+  });
+  return Super.neu_p;
+};
 Super.stilLaden=async function(name){
   if(Super.stil[name])return Super.stil[name];
   var j=await Super.hole('voice_styles/'+name+'.json'),ort=Super.ort;

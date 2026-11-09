@@ -38,6 +38,8 @@ Sprache.mod=function(p,g){
   if(m){if(q.st)q.st+=m[0];q.tempo=(q.tempo||1)*m[1];q.mid=(q.mid||0)+m[2]}
   return q;
 };
+Sprache.info='';
+Sprache.spitze=function(x){var m=0;for(var i=0;i<x.length;i++){var v=x[i];if(v!==v){x[i]=0;continue}if(v<0)v=-v;if(v>m)m=v}if(m>1)for(var j=0;j<x.length;j++)x[j]=Math.max(-1,Math.min(1,x[j]));return m};
 Sprache.saeubern=function(t){return t.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}️]/gu,'').replace(/\s+/g,' ').trim()};
 Sprache.roh=function(text){
   if(Sprache.rohC[text])return Sprache.rohC[text];
@@ -52,7 +54,16 @@ Sprache.zeile=function(text,f,g){
   if(Sprache.modus=='super'){
     var vs=Sprache.superStimme(f),tp=Sprache.STEMPO[g]||1.05,k2='S|'+t+'|'+vs+'|'+tp;
     if(Sprache.cache[k2])return Sprache.cache[k2];
-    var p2=Super.sprich(t,vs,{tempo:tp}).then(function(r){return {url:URL.createObjectURL(Stimme.wav(r.x,r.rate)),env:Stimme.pegel(r.x,r.rate,24),dauer:r.x.length/r.rate,x:r.x,rate:r.rate}});
+    var p2=Super.sprich(t,vs,{tempo:tp}).then(function(r){
+      var pk=Sprache.spitze(r.x);
+      if(pk<0.003&&!Super.kompat){Sprache.info='Stille erkannt, sicherer Modus';return Super.neustart(true).then(function(){return Super.sprich(t,vs,{tempo:tp})})}
+      return r;
+    }).then(function(r){
+      var pk=Sprache.spitze(r.x);
+      if(pk<0.0005)throw new Error('Die Stimme ist stumm ('+(Super.backend||'?')+')');
+      if(pk<0.7){var g=0.85/pk;for(var i=0;i<r.x.length;i++)r.x[i]*=g}
+      return r;
+    }).then(function(r){return {url:URL.createObjectURL(Stimme.wav(r.x,r.rate)),env:Stimme.pegel(r.x,r.rate,24),dauer:r.x.length/r.rate,x:r.x,rate:r.rate}});
     p2.catch(function(){delete Sprache.cache[k2]});
     return Sprache.cache[k2]=p2;
   }

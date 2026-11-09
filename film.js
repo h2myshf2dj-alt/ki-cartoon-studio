@@ -64,7 +64,7 @@ function spielenWA(z){
 }
 var REC_FEHL=0;
 function spielen(z){
-  if(Rec.an&&z.x&&Klang.ctx)return spielenWA(z);
+  if(z.x&&Klang.init())return spielenWA(z);
   return new Promise(function(ok){
     var t=setTimeout(ok,(z.dauer+3)*1000);
     function fertig(){clearTimeout(t);ok()}
@@ -165,7 +165,7 @@ async function filmStart(rec){
       fStatus('');
       var mb=(datei.size/1048576).toFixed(1).replace('.',',');
       var fv2=document.getElementById('fvideo');
-      var warn=REC_FEHL?'<div class="gdauer" style="background:#ffe3d6">⚠️ Bei '+REC_FEHL+' von '+items.length+' Sätzen fehlt die Stimme.<br><small>Grund: '+esc(Sprache.fehler||'unbekannt')+'</small></div>':'<div class="fstatus">Alle '+items.length+' Sätze mit Stimme aufgenommen ('+esc(Sprache.modus)+', '+esc(Rec.typ||'?')+').</div>';
+      var warn=REC_FEHL?'<div class="gdauer" style="background:#ffe3d6">⚠️ Bei '+REC_FEHL+' von '+items.length+' Sätzen fehlt die Stimme.<br><small>Grund: '+esc(Sprache.fehler||'unbekannt')+'</small></div>':'<div class="fstatus">Alle '+items.length+' Sätze mit Stimme aufgenommen ('+esc(Sprache.modus+' '+(Super.backend||'')+(Sprache.info?' – '+Sprache.info:''))+', '+esc(Rec.typ||'?')+').</div>';
       if(fv2)fv2.innerHTML=warn+'<div class="gdauer" style="text-align:center">✅ Video fertig ('+mb+' MB)</div><button class="gross" style="background:#3a86ff" onclick="Rec.teilen()">📤 Video sichern oder teilen</button><div class="fstatus">Tippe dann auf „Video sichern“, um es in Fotos zu speichern.</div>';
     }catch(e){fStatus('⚠️ Video konnte nicht erstellt werden: '+esc(String(e&&e.message||e)))}
   }
