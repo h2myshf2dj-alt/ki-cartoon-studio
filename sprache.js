@@ -52,14 +52,14 @@ Sprache.zeile=function(text,f,g){
   if(Sprache.modus=='super'){
     var vs=Sprache.superStimme(f),tp=Sprache.STEMPO[g]||1.05,k2='S|'+t+'|'+vs+'|'+tp;
     if(Sprache.cache[k2])return Sprache.cache[k2];
-    var p2=Super.sprich(t,vs,{tempo:tp}).then(function(r){return {url:URL.createObjectURL(Stimme.wav(r.x,r.rate)),env:Stimme.pegel(r.x,r.rate,24),dauer:r.x.length/r.rate}});
+    var p2=Super.sprich(t,vs,{tempo:tp}).then(function(r){return {url:URL.createObjectURL(Stimme.wav(r.x,r.rate)),env:Stimme.pegel(r.x,r.rate,24),dauer:r.x.length/r.rate,x:r.x,rate:r.rate}});
     p2.catch(function(){delete Sprache.cache[k2]});
     return Sprache.cache[k2]=p2;
   }
   var p=Sprache.mod(Sprache.preset(f),g),key=t+'|'+JSON.stringify(p);
   if(Sprache.cache[key])return Sprache.cache[key];
   var pr=Sprache.roh(t).then(function(r){
-    return Stimme.verarbeiten(r.x,r.rate,p).then(function(z){return {url:URL.createObjectURL(Stimme.wav(z,r.rate)),env:Stimme.pegel(z,r.rate,24),dauer:z.length/r.rate}});
+    return Stimme.verarbeiten(r.x,r.rate,p).then(function(z){return {url:URL.createObjectURL(Stimme.wav(z,r.rate)),env:Stimme.pegel(z,r.rate,24),dauer:z.length/r.rate,x:z,rate:r.rate}});
   });
   pr.catch(function(){delete Sprache.cache[key]});
   return Sprache.cache[key]=pr;

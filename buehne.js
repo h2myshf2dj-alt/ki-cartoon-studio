@@ -67,5 +67,5 @@ function buehneZeichnen(){
     pr+='<ellipse cx="'+x+'" cy="'+(y+44)+'" rx="'+(sz*0.45)+'" ry="5" fill="#000" opacity=".12"/><text x="'+x+'" y="'+y+'" font-size="'+sz.toFixed(0)+'" text-anchor="middle" dominant-baseline="central">'+p.e+'</text>';
   });
   var s='<svg viewBox="0 0 400 300"><g transform="translate('+zx+' 200) scale('+zz.toFixed(3)+') translate('+(-zx)+' -200)">'+hintergrund(g.kat)+pr+fig+emo+'</g></svg>';
-  el.innerHTML=s;
+  B.svg=s;el.innerHTML=s;
 }
