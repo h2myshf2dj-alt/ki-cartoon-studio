@@ -58,9 +58,11 @@ function spielenWA(z){
       var b=c.createBuffer(1,z.x.length,z.rate);b.getChannelData(0).set(z.x);
       q=c.createBufferSource();q.buffer=b;q.connect(Klang.out);q.onended=fertig;
       B.env=z.env;B.envT0=jetzt();WAQ=q;q.start();
-    }catch(e){fertig()}
+      if(c.state!='running'&&c.resume)c.resume();
+    }catch(e){Sprache.fehler='Abspielen: '+String(e&&e.message||e);REC_FEHL++;fertig()}
   });
 }
+var REC_FEHL=0;
 function spielen(z){
   if(Rec.an&&z.x&&Klang.ctx)return spielenWA(z);
   return new Promise(function(ok){
@@ -121,6 +123,7 @@ async function filmStart(rec){
     }
   }
   if(rec){
+    REC_FEHL=0;
     try{Klang.init();Rec.start()}catch(e){ut.innerHTML='⚠️ Aufnahme geht nicht: '+esc(String(e&&e.message||e));return}
     buehneNeu();ut.innerHTML='🔴 Aufnahme läuft …';fStatus('🔴 Aufnahme – Bildschirm bitte anlassen');
     await warten(700);if(my!=tok)return;
@@ -131,6 +134,12 @@ async function filmStart(rec){
     if(voice){
       try{z=await pro[k]}catch(e){z=null;Sprache.fehler=String(e&&e.message||e)}
       if(my!=tok)return;
+      if(rec&&!z){
+        try{delete Sprache.cache;Sprache.cache={};z=await Sprache.zeile(it.t,f,it.g)}catch(e){z=null;Sprache.fehler=String(e&&e.message||e)}
+        if(my!=tok)return;
+        if(!z)REC_FEHL++;
+      }
+      if(rec&&z&&!z.x){REC_FEHL++;Sprache.fehler='Stimmdaten fehlen'}
     }
     if(it.s!=B.szene){B.szene=it.s;B.sz0=jetzt();B.props=[]}
     B.item=it;B.spr=it.wer?Math.max(0,g.figuren.indexOf(it.wer)):-1;B.satz0=jetzt();
@@ -140,7 +149,7 @@ async function filmStart(rec){
     Rec.wer=it.wer||'';Rec.ut=it.t;
     ut.innerHTML=it.wer?'<b>'+esc(it.wer)+':</b> '+esc(it.t):'<i>'+esc(it.t)+'</i>';
     Klang.effekt(Klang.passend(it.t));
-    if(z)await spielen(z);else await sprichFB(it.t,f,my);
+    if(z)await spielen(z);else if(rec)await warten(Math.max(1500,it.t.split(/\s+/).length*400));else await sprichFB(it.t,f,my);
     if(my!=tok)return;
     B.spr=-1;B.env=null;B.lvl=0;
     await warten(120);
@@ -156,7 +165,8 @@ async function filmStart(rec){
       fStatus('');
       var mb=(datei.size/1048576).toFixed(1).replace('.',',');
       var fv2=document.getElementById('fvideo');
-      if(fv2)fv2.innerHTML='<div class="gdauer" style="text-align:center">✅ Video fertig ('+mb+' MB)</div><button class="gross" style="background:#3a86ff" onclick="Rec.teilen()">📤 Video sichern oder teilen</button><div class="fstatus">Tippe dann auf „Video sichern“, um es in Fotos zu speichern.</div>';
+      var warn=REC_FEHL?'<div class="gdauer" style="background:#ffe3d6">⚠️ Bei '+REC_FEHL+' von '+items.length+' Sätzen fehlt die Stimme.<br><small>Grund: '+esc(Sprache.fehler||'unbekannt')+'</small></div>':'<div class="fstatus">Alle '+items.length+' Sätze mit Stimme aufgenommen ('+esc(Sprache.modus)+', '+esc(Rec.typ||'?')+').</div>';
+      if(fv2)fv2.innerHTML=warn+'<div class="gdauer" style="text-align:center">✅ Video fertig ('+mb+' MB)</div><button class="gross" style="background:#3a86ff" onclick="Rec.teilen()">📤 Video sichern oder teilen</button><div class="fstatus">Tippe dann auf „Video sichern“, um es in Fotos zu speichern.</div>';
     }catch(e){fStatus('⚠️ Video konnte nicht erstellt werden: '+esc(String(e&&e.message||e)))}
   }
 }
