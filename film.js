@@ -152,7 +152,8 @@ async function filmStart(rec){
     B.item=it;B.spr=it.wer?Math.max(0,g.figuren.indexOf(it.wer)):-1;B.satz0=jetzt();
     var rq=requisiten(it.t);
     if(rq.length&&rq.join('')!=B.props.map(function(p){return p.e}).join('')){B.props=rq.map(function(e){return {e:e,t0:jetzt()}});Klang.effekt('pop')}
-    fStatus((rec?'🔴 Aufnahme – ':'')+'Szene '+(it.s+1)+' von '+g.szenen.length);
+    var wq=z?(Sprache.modus=='super'?'Supertonic '+Sprache.superStimme(f)+' · '+(Super.backend||'?'):'Thorsten'):'⚠️ iPhone-Ersatzstimme'+(Sprache.fehler?' ('+esc(Sprache.fehler)+')':'');
+    fStatus((rec?'🔴 Aufnahme – ':'')+'Szene '+(it.s+1)+' von '+g.szenen.length+'<br><small>🗣 '+wq+'</small>');
     Rec.wer=it.wer||'';Rec.ut=it.t;
     ut.innerHTML=it.wer?'<b>'+esc(it.wer)+':</b> '+esc(it.t):'<i>'+esc(it.t)+'</i>';
     Klang.effekt(Klang.passend(it.t));

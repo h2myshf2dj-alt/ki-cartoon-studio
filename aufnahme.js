@@ -1,5 +1,5 @@
 // Aufnahme des Films als Video (Bild + Ton + Untertitel)
-var Rec={an:false,mr:null,teile:[],cv:null,cx:null,busy:false,timer:null,ut:'',wer:'',typ:'',datei:null,W:960,H:720};
+var Rec={mitUT:false,an:false,mr:null,teile:[],cv:null,cx:null,busy:false,timer:null,ut:'',wer:'',typ:'',datei:null,W:960,H:720};
 Rec.format=function(){
   if(typeof MediaRecorder=='undefined')return null;
   var t=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1,mp4a','video/mp4','video/webm;codecs=vp8,opus','video/webm'];
@@ -34,7 +34,7 @@ Rec.bild=function(){
   var url=URL.createObjectURL(new Blob([s],{type:'image/svg+xml'})),img=new Image();
   img.onload=function(){
     try{
-      var x=Rec.cx;x.drawImage(img,0,0,Rec.W,Rec.H);Rec.untertitel(x);
+      var x=Rec.cx;x.drawImage(img,0,0,Rec.W,Rec.H);if(Rec.mitUT)Rec.untertitel(x);
     }catch(e){}
     URL.revokeObjectURL(url);Rec.busy=false;
   };
